@@ -1,8 +1,11 @@
 from games import *
 from config import *
 from logs import *
+from token import *
 
 from discord.utils import get
+
+
 # discord.ext.commands.errors.CommandNotFound: Command "re" is not found
 # await channel.send(f"C'est {message.author.mention} qui a trouvé la bonne, réponse !")
 # await channel.send(f"La bonne réponse était {answerGame1[tailleTab]} !")
@@ -10,6 +13,13 @@ from discord.utils import get
 @client.event
 async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
+
+
+@client.command()
+@commands.is_owner()
+async def shutdown(ctx):
+    await ctx.channel.send("Le bot se deconnecte")
+    await ctx.close()
 
 
 @client.command(aliases=['s'])
@@ -32,7 +42,6 @@ async def start(self, message):
         await client.delete_message(self.message)
 
 
-
 @start.error
 async def start_error(ctx, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
@@ -44,6 +53,7 @@ async def start_error(ctx, error):
 async def restart(self):
     await start(self, 'dvb')
     return
+
 
 @client.command(name='list')
 async def _list(ctx, arg):

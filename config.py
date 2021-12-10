@@ -2,12 +2,13 @@
 import discord
 from discord.ext import commands
 
+
 # Gestion des commandes du bot
 descriptionBot = "Bot pour le Davy Back Fight"
 prefixBot = '!'
 usageBot = "Usage: " + prefixBot + "start dvb or " + prefixBot + "s dvb "
 
-client = commands.Bot(command_prefix=prefixBot, description=descriptionBot)
+client = commands.Bot(command_prefix=prefixBot, description=descriptionBot, intents = discord.Intents.all())
 
 # Gestion des Equipes
 # https://emojipedia.org/ pour les différents Emojis
@@ -81,5 +82,4 @@ colorYellowEmbedJeu = discord.Color.dark_red()
 # idSalon DBV
 idChannel = 917858064932163629
 
-# Token
-token = 'OTE3ODU3ODQ5NTM3ODU5NjI1.Ya-zvA.7Z7DupKmMvmpxvrORP5jNmZhTLI'
+

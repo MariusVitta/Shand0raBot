@@ -1,5 +1,7 @@
 import asyncio
 
+import discord
+
 from config import *
 
 global pointsTeam2
@@ -136,8 +138,9 @@ async def nextEpreuve():
 async def printEmbedNextEpreuve():
     channel = client.get_channel(idChannel)
     embed = discord.Embed(
-        title="Prochaine épreuve",
-        color=colorEmbedWhiteDBV
+        title="Epreuve suivante",
+        description="▫️ (Nom de l'épreuve)",
+        color=discord.Color.blue()
     )
     await channel.send(embed=embed)
 
@@ -149,10 +152,19 @@ async def printEmbedNextQuestion():
     )
     await channel.send(embed=embed)
 
+async def printEmbedDebutPartie():
+    channel = client.get_channel(idChannel)
+    embed = discord.Embed(
+        title="La partie va démarrer",
+        color=colorEmbedWhiteDBV
+    )
+    await channel.send(embed=embed)
+
 
 async def lancerJeux():
     await initVar()
     global numeroJeu
+    await printEmbedDebutPartie()
     for numeroJeu in range(3):
         # JEU 1
         await jeu(numeroJeu)
