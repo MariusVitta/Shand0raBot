@@ -8,7 +8,7 @@ descriptionBot = "Bot pour le Davy Back Fight"
 prefixBot = '!'
 usageBot = "Usage: " + prefixBot + "start dvb or " + prefixBot + "s dvb "
 
-client = commands.Bot(command_prefix=prefixBot, description=descriptionBot, intents = discord.Intents.all())
+client = commands.Bot(command_prefix=prefixBot, description=descriptionBot)
 
 # Gestion des Equipes
 # https://emojipedia.org/ pour les différents Emojis
