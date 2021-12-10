@@ -106,10 +106,10 @@ async def jeu(numeroJeu):
             await calculPoints(message.author)
             reponse = tabAnswers[numeroJeu][tailleTab]
             embed = discord.Embed(
-                title=pointVert + str(message.author.name) + textGoodAnswer ,
+                title=pointVert + str(message.author.name) + textGoodAnswer + "`\n\n" ,
                 description= reponseText + "`"+ str(reponse) + "`\n\n" +
-                             tabEmoji[0] + tabRoleBold[0] + ": `" + str(pointsTeam1) + " points` \n\n" + \
-                            tabEmoji[1] + tabRoleBold[1] +  ": `" + str(pointsTeam2) + " points` \n\n",
+                            carreBlanc   + " " +tabEmoji[0] + " " +  tabRoleBold[0] + ": `" + str(pointsTeam1) + " points` \n\n" + \
+                            carreBlanc   + " " + tabEmoji[1] + " " + tabRoleBold[1] +  ": `" + str(pointsTeam2) + " points` \n\n",
                 color=colorEmbedGoodAnswer
             )
             await channel.send(embed=embed)

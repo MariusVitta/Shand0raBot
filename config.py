@@ -12,15 +12,16 @@ client = commands.Bot(command_prefix=prefixBot, description=descriptionBot)
 # Gestion des Equipes
 # https://emojipedia.org/ pour les différents Emojis
 tabEmoji = ["☠", "🦊"]  # emoji bleu, rouge
-tabRole = ["Equipe 1", "Equipe 2"]
-tabRoleBold = ["**Equipe 1**", "**Equipe 2**"]
+tabRole = ["Mugiwara", "Foxy"]
+tabRoleBold = ["**Mugiwara**", "**Foxy**"]
+
 # messages DavyBackFight
 messageStart = 'dvb'
 titreDBV = "🎮 Davy Back Fight"
 descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n " \
                  "🔸 Pour rejoindre une équipe réagit à l'un des émojis \n\n " \
-                 "▫️ ☠️ Equipe 1 \n\n" \
-                 "▫️ 🦊 Equipe 2"
+                 "▫️ ☠️ Mugiwara \n\n" \
+                 "▫️ 🦊 Foxy"
 colorEmbedWhiteDBV = discord.Color.from_rgb(255, 255, 255)
 debutPartieDBV = "🔹 La première épreuve va commencer\n\n"
 
@@ -81,4 +82,4 @@ colorYellowEmbedJeu = discord.Color.dark_red()
 idChannel = 917858064932163629
 
 # Token
-token = 'OTE3ODU3ODQ5NTM3ODU5NjI1.Ya-zvA.5VFzEepFAXlQpQs1TMnahlH_Wv8'
+token = 'OTE3ODU3ODQ5NTM3ODU5NjI1.Ya-zvA.7Z7DupKmMvmpxvrORP5jNmZhTLI'
