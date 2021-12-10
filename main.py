@@ -2,8 +2,10 @@ from games import *
 from config import *
 from logs import *
 from token import *
+import os
 
 from discord.utils import get
+
 
 
 # discord.ext.commands.errors.CommandNotFound: Command "re" is not found
@@ -122,4 +124,4 @@ async def delete_message(msg):
     await msg.delete()
 
 
-client.run(token)
+client.run(os.environ.get("DISCORD_TOKEN"))
