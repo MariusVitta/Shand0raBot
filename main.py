@@ -123,5 +123,5 @@ async def clear(ctx):
 async def delete_message(msg):
     await msg.delete()
 
-print(os.getenv('TOKEN'))
+print("--------------------------------------------------------------------------" + os.getenv('TOKEN'))
 client.run(TOKEN)
