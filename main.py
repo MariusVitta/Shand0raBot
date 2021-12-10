@@ -1,9 +1,11 @@
-from discord.utils import get
-
 from games import *
 from config import *
 from logs import *
 
+from discord.utils import get
+# discord.ext.commands.errors.CommandNotFound: Command "re" is not found
+# await channel.send(f"C'est {message.author.mention} qui a trouvé la bonne, réponse !")
+# await channel.send(f"La bonne réponse était {answerGame1[tailleTab]} !")
 
 @client.event
 async def on_ready():
@@ -18,7 +20,7 @@ async def start(self, message):
         embed = discord.Embed(
             title=titreDBV,
             description=descriptionDBV,
-            color=couleurEmbedDBV
+            color=colorEmbedWhiteDBV
         )
 
         choix = await channel.send(embed=embed)
@@ -95,7 +97,7 @@ async def attente_joueur(payload):
     reaction1 = get(message.reactions, emoji=tabEmoji[1])
 
     if reaction0 and reaction1 and (reaction0.count == 2 and reaction1.count == 1):
-        await jeu1()
+        await lancerJeux()
         channel = client.get_channel(idChannel)
         message = await channel.send("Fin du Davy Back Fight")
 

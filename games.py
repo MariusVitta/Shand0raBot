@@ -2,37 +2,43 @@ import asyncio
 
 from config import *
 
-global pointsTeamBleue
-pointsTeamBleue = 0
+global pointsTeam2
+pointsTeam2 = 0
 
-global pointsTeamRouge
-pointsTeamRouge = 0
+global pointsTeam1
+pointsTeam1 = 0
+
+global numeroJeu
+numeroJeu = 0
 
 
 async def initVar():
-    global pointsTeamBleue
-    pointsTeamBleue = 0
+    global pointsTeam2
+    pointsTeam2 = 0
 
-    global pointsTeamRouge
-    pointsTeamRouge = 0
+    global pointsTeam1
+    pointsTeam1 = 0
+
+    global numeroJeu
+    numeroJeu = 0
+
 
 async def calculPoints(messageAuthor):
-    global pointsTeamBleue
-    global pointsTeamRouge
-    if "bleu" in [y.name.lower() for y in messageAuthor.roles]:
-
-        pointsTeamBleue += 1
-        #channel = client.get_channel(idChannel)
-        #await channel.send("Youpi")
+    global pointsTeam2
+    global pointsTeam1
+    if tabRole[0].lower() in [y.name.lower() for y in messageAuthor.roles]:
+        pointsTeam1 += 1
+        # channel = client.get_channel(idChannel)
+        # await channel.send("Youpi")
     else:
-        pointsTeamRouge += 1
+        pointsTeam2 += 1
 
     return;
 
 
 async def printWinners():
     channel = client.get_channel(idChannel)
-    descriptionWinners = "L'equipe gagnante est l'equipe bleue " if pointsTeamBleue > pointsTeamRouge else "L'equipe gagnante est l'equipe rouge "
+    descriptionWinners = "L'equipe gagnante est l'equipe bleue " if pointsTeam2 > pointsTeam1 else "L'equipe gagnante est l'equipe rouge "
 
     embed = discord.Embed(
         title=titreWinner,
@@ -43,115 +49,120 @@ async def printWinners():
     pass
 
 
-async def printScore():
+async def printScore(numEpreuve):
     channel = client.get_channel(idChannel)
-    descriptionScore = "[🔴]: " + str(pointsTeamRouge) + "\n[🔵]: " + str(pointsTeamBleue)
+    descriptionScore = tabTextEpreuve[numEpreuve] + "\n\n" + \
+                       tabEmoji[0] + \
+                       "\n" + \
+                       tabRoleBold[0] + "\n" \
+                                        "`Score :" + str(pointsTeam1) +"` \n\n" + \
+                       tabEmoji[1] + \
+                       "\n" + \
+                       tabRoleBold[1] + "\n" \
+                                        "`Score :" + str(pointsTeam2) +"` \n"
     embed = discord.Embed(
-        title=titreScoreActuel,
+        title=titreDBV,
         description=descriptionScore,
-        color=colorDarkRedEmbedJeu
+        color=colorEmbedWhiteDBV
     )
     choix = await channel.send(embed=embed)
     pass
 
 
 # règles du jeu
-async def jeu1():
+async def jeu(numeroJeu):
+    channel = client.get_channel(idChannel)
+    tailleTab = 0
+
+    def checkMessage(m):
+        return m.content == tabAnswers[numeroJeu][tailleTab] and m.channel == channel
+
+    for question in tabQuestions[numeroJeu]:
+        embed = discord.Embed(
+            title="Question " + str(tailleTab + 1) + " | " + tabEpreuves[numeroJeu],
+            description=carreBlanc + question,
+            color=colorEmbedWhiteDBV
+        )
+        await channel.send(embed=embed)
+
+
+        try:
+            message = await client.wait_for("message", timeout=15, check=checkMessage)
+        except asyncio.TimeoutError:
+            reponse = tabAnswers[numeroJeu][tailleTab]
+            embed = discord.Embed(
+                title=timeout,
+                description=reponseText + "`"+ str(reponse) + "`",
+                color=colorEmbedTimeout
+            )
+            await channel.send(embed=embed)
+
+            if tailleTab != len(answerGame1) - 1:
+                await nextQuestion()
+            elif numeroJeu != (len(tabEpreuves) - 1):
+                await nextEpreuve()
+            tailleTab += 1
+        else:
+            await calculPoints(message.author)
+            reponse = tabAnswers[numeroJeu][tailleTab]
+            embed = discord.Embed(
+                title=pointVert + str(message.author.name) + textGoodAnswer ,
+                description= reponseText + "`"+ str(reponse) + "`\n\n" +
+                             tabEmoji[0] + tabRoleBold[0] + ": `" + str(pointsTeam1) + " points` \n\n" + \
+                            tabEmoji[1] + tabRoleBold[1] +  ": `" + str(pointsTeam2) + " points` \n\n",
+                color=colorEmbedGoodAnswer
+            )
+            await channel.send(embed=embed)
+
+            if tailleTab != len(answerGame1) - 1:
+                await nextQuestion()
+            elif numeroJeu != (len(tabEpreuves) - 1):
+                await nextEpreuve()
+            tailleTab += 1
+
+    return;
+
+
+async def nextQuestion():
+    await asyncio.sleep(5)
+    await printEmbedNextQuestion()
+    await asyncio.sleep(5)
+
+async def nextEpreuve():
+    await asyncio.sleep(5)
+    await printEmbedNextEpreuve()
+    await asyncio.sleep(5)
+
+async def printEmbedNextEpreuve():
+    channel = client.get_channel(idChannel)
+    embed = discord.Embed(
+        title="Prochaine épreuve",
+        color=colorEmbedWhiteDBV
+    )
+    await channel.send(embed=embed)
+
+async def printEmbedNextQuestion():
+    channel = client.get_channel(idChannel)
+    embed = discord.Embed(
+        title="Prochaine question",
+        color=colorEmbedWhiteDBV
+    )
+    await channel.send(embed=embed)
+
+
+async def lancerJeux():
     await initVar()
-    channel = client.get_channel(idChannel)
-    tailleTab = 0
-    embed = discord.Embed(
-        title=titreJeu1,
-        description=descriptionJeu1,
-        color=colorDarkBlueEmbedJeu
-    )
-    choix = await channel.send(embed=embed)
+    global numeroJeu
+    for numeroJeu in range(3):
+        # JEU 1
+        await jeu(numeroJeu)
 
-    def checkMessage(m):
-        return m.content == answerGame1[tailleTab] and m.channel == channel
+        # gestion des points
+        #await printScore(numeroJeu)
 
-    for question in tabQuestionGame1:
-        await channel.send(question)
-        try:
-            message = await client.wait_for("message", timeout=30, check=checkMessage)
-        except asyncio.TimeoutError:
-            await channel.send(f"La bonne réponse était {answerGame1[tailleTab]} !")
-        else:
-            await channel.send(f"C'est {message.author.mention} qui a trouvé la bonne, réponse !")
-            tailleTab += 1
-            await calculPoints(message.author)
+        # on patiente 3 secondes après l'affichage des scores
+        await asyncio.sleep(3)
 
-    # gestion des points
-    await printScore()
-
-    await jeu2()
-    return;
-
-
-# règles du jeu
-async def jeu2():
-    channel = client.get_channel(idChannel)
-    tailleTab = 0
-    embed = discord.Embed(
-        title=titreJeu2,
-        description=descriptionJeu2,
-        color=colorDarkBlueEmbedJeu
-    )
-    choix = await channel.send(embed=embed)
-
-    def checkMessage(m):
-        return m.content == answerGame2[tailleTab] and m.channel == channel
-
-    for question in tabQuestionGame2:
-        await channel.send(question)
-
-        try:
-            message = await client.wait_for("message", timeout=30, check=checkMessage)
-        except asyncio.TimeoutError:
-            await channel.send(f"La bonne réponse était {answerGame1[tailleTab]} !")
-        else:
-            await channel.send(f"C'est {message.author.mention} qui a trouvé la bonne, réponse !")
-            tailleTab += 1
-            await calculPoints(message.author)
-
-    # gestion des points
-    await printScore()
-    await jeu3()
-
-    return;
-
-
-# règles du jeu
-async def jeu3():
-    channel = client.get_channel(idChannel)
-    tailleTab = 0
-    embed = discord.Embed(
-        title=titreJeu2,
-        description=descriptionJeu2,
-        color=colorDarkBlueEmbedJeu
-    )
-    choix = await channel.send(embed=embed)
-
-    def checkMessage(m):
-        return m.content == answerGame3[tailleTab] and m.channel == channel
-
-    for question in tabQuestionGame3:
-        await channel.send(question)
-
-        try:
-            message = await client.wait_for("message", timeout=30, check=checkMessage)
-        except asyncio.TimeoutError:
-            await channel.send(f"La bonne réponse était {answerGame1[tailleTab]} !")
-        else:
-            await channel.send(f"C'est {message.author.mention} qui a trouvé la bonne, réponse !")
-            tailleTab += 1
-            await calculPoints(message.author)
-
-    # gestion des points
-    await printScore()
-
-    pointsTeamBleu = 0
-    pointsTeamRouge = 0
+    pointsTeam2 = 0
+    pointsTeam1 = 0
     await printWinners()
-
-    return;
