@@ -6,7 +6,7 @@ import os
 
 from discord.utils import get
 
-
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 # discord.ext.commands.errors.CommandNotFound: Command "re" is not found
 # await channel.send(f"C'est {message.author.mention} qui a trouvé la bonne, réponse !")
@@ -124,4 +124,4 @@ async def delete_message(msg):
     await msg.delete()
 
 
-client.run(os.environ.get("DISCORD_TOKEN"))
+client.run(TOKEN)
