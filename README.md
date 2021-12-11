@@ -1,14 +1,15 @@
 # Auteurs
 * Marius
-* Said
 * Yung
+* Said
+
 
 ## Présentation
 Ce bot discord a été réalisé avec Python et est utilisé comme bot pour jouer à un jeu sous forme de quiz par equipes.
 
 ## Prérequis
 * Python 3.8 ou ultérieure
-* Discord.py 1.7.3 ou ultérieure
+- du module Discord.py 1.7.3 ou ultérieure
 
 
 ## Installation
