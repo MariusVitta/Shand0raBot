@@ -30,6 +30,7 @@ nombreJoueursEquipe1 = 1
 nombreJoueursEquipe2 = 2
 indiceEquipe1 = 0
 indiceEquipe2 = 1
+
 # ------------------------------------------------------------------------------------------------------------#
 # MESSAGES DAVYBACKFIGHT
 messageStart = 'dvb'
@@ -78,6 +79,11 @@ textGoodAnswer = " a donné la bonne réponse"
 colorEmbedGoodAnswer = discord.Color.from_rgb(120, 177, 89)
 
 # ------------------------------------------------------------------------------------------------------------#
+# GESTIONS DU DELAI
+delaiEntreEpreuves = 5
+delaiEntreQuestions = 5
 
+
+# ------------------------------------------------------------------------------------------------------------#
 # idSalon DBV
 idChannel = 917858064932163629
