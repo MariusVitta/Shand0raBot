@@ -4,7 +4,7 @@ import discord
 
 from config import *
 
-global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions,partieEnCours
+global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions, partieEnCours
 pointsTeam2 = 0
 pointsTeam1 = 0
 numeroJeu = 0
@@ -12,18 +12,19 @@ tabQuestions = questions
 
 
 async def initVar():
-    global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions,valTeam1,valTeam2
-    pointsTeam2, pointsTeam1, numeroJeu = 0,0,0
+    global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions, valTeam1, valTeam2, tabPlayer
+    pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
     tabQuestions = questions["One Piece"]
     random.shuffle(tabQuestions)
-    valTeam1, valTeam2 = "",""
-    #print(tabQuestions)
-    #print(tabQuestions[0][1])
-    #print(tabQuestions[1])
+    valTeam1, valTeam2 = "", ""
+    # tabPlayer = [[],[]]
+    # print(tabQuestions)
+    # print(tabQuestions[0][1])
+    # print(tabQuestions[1])
 
 
 async def calculPoints(messageAuthor):
-    global pointsTeam2,pointsTeam1,valTeam1,valTeam2
+    global pointsTeam2, pointsTeam1, valTeam1, valTeam2
     if tabRole[0].lower() in [y.name.lower() for y in messageAuthor.roles]:
         pointsTeam1 += 1
         valTeam1 = " :```diff\n+ "
@@ -78,6 +79,31 @@ async def printScore(numEpreuve):
     pass
 
 
+async def printPlayer():
+    channel = client.get_channel(idChannel)
+    team1,team2 = "",""
+    print(tabPlayer)
+    for player in tabPlayer[0]:
+        team1 += "```" + player + "```\n"
+    for player in tabPlayer[1]:
+        team2 += "```" + player + "```\n"
+    embed = discord.Embed(
+        title=titreDBV,
+        description=debutPartieDBV +\
+                    tabEmoji[0] +\
+                    "\n"+\
+                    tabRoleBold[0] +\
+                    team1 + \
+                    "\n\n" + \
+                    tabEmoji[1] + \
+                    "\n" + \
+                    tabRoleBold[1] + \
+                    team2,
+        color=colorEmbedWhiteDBV
+    )
+    await channel.send(embed=embed)
+
+
 # règles du jeu
 async def jeu(numeroJeu):
     channel = client.get_channel(idChannel)
@@ -92,8 +118,8 @@ async def jeu(numeroJeu):
             return;
 
         else:
-            #print(questionReponses[indiceReponses])
-            #print(questionReponses[indiceQuestion])
+            # print(questionReponses[indiceReponses])
+            # print(questionReponses[indiceQuestion])
             embed = discord.Embed(
                 title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numeroJeu],
                 description=carreBlanc + questionReponses[indiceQuestion],
@@ -123,8 +149,10 @@ async def jeu(numeroJeu):
                 embed = discord.Embed(
                     title=pointVert + str(message.author.name) + textGoodAnswer + "\n\n",
                     description=reponseText + "`" + str(reponse) + "`\n\n" +
-                                carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(pointsTeam1) + " points``` \n\n" + \
-                                carreBlanc + " " + tabEmoji[1] + " " + tabRoleBold[1] + valTeam2 + str(pointsTeam2) + " points``` \n\n",
+                                carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
+                        pointsTeam1) + " points``` \n\n" + \
+                                carreBlanc + " " + tabEmoji[1] + " " + tabRoleBold[1] + valTeam2 + str(
+                        pointsTeam2) + " points``` \n\n",
                     color=colorEmbedGoodAnswer,
                 )
                 var = f": ```diff\n"
@@ -182,6 +210,8 @@ async def printEmbedDebutPartie():
 async def lancerJeux():
     await initVar()
     global numeroJeu, partieEnCours
+    await printPlayer()
+    await asyncio.sleep(3)
     await printEmbedDebutPartie()
 
     for numeroJeu in range(3):
