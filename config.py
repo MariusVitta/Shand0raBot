@@ -1,6 +1,7 @@
 # Bot
 import discord
 from discord.ext import commands
+from discord_components import DiscordComponents, ComponentsBot, Button
 
 
 # Gestion des commandes du bot
@@ -9,10 +10,15 @@ prefixBot = '!'
 usageBot = "Usage: " + prefixBot + "start dvb or " + prefixBot + "s dvb "
 
 client = commands.Bot(command_prefix=prefixBot, description=descriptionBot)
+buttons = DiscordComponents(client)
 
 # Gestion des Equipes
 # https://emojipedia.org/ pour les différents Emojis
 tabEmoji = ["☠", "🦊"]  # emoji bleu, rouge
+medaillePremier = "🥇"
+medailleSecond = "🥈"
+mugiBoutonBlanc = "▫️ ☠️ Mugiwara :"
+foxyBoutonBlanc = "▫️ 🦊 Foxy :"
 tabRole = ["Mugiwara", "Foxy"]
 tabRoleBold = ["**Mugiwara**", "**Foxy**"]
 
@@ -26,32 +32,36 @@ descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n " \
 colorEmbedWhiteDBV = discord.Color.from_rgb(255, 255, 255)
 debutPartieDBV = "🔹 La première épreuve va commencer\n\n"
 
-
 phraseQuestion = "▫️ **Question**"
 
 # QUESTIONS
-tabQuestionGame1 = ["Question 1 - 1"]
+questionGame1 = "Question 1 - 1"
 answerGame1 = ["1"]
 # --- config jeu 1:
 descriptionJeu1 = "🔹 **Epreuve 1 / 3** \n\n" + phraseQuestion
 
 # -------------------------------------------------------------
-tabQuestionGame2 = ["Question 2 - 1"]
+questionGame2 = "Question 2 - 1"
 
 # --- config jeu 2:
 descriptionJeu2 = "🔹 **Epreuve 2 / 3** \n\n" + phraseQuestion
 
 # -------------------------------------------------------------
-tabQuestionGame3 = ["Question 3 - 1"]
+questionGame3 = "Question 3 - 1"
 
 # --- config jeu 3:
 descriptionJeu3 = "🔹 **Epreuve 3 / 3** \n\n" + phraseQuestion
 
 tabTextEpreuve = ["🔹 **Epreuve 1 / 3**", "🔹 **Epreuve 2 / 3**", "🔹 **Epreuve 3 / 3** "]
 
-#tableaux
-tabQuestions = [tabQuestionGame1, tabQuestionGame2, tabQuestionGame3]
-tabAnswers = [answerGame1, answerGame1, answerGame1]
+# tableaux
+questions = {"One Piece": [[questionGame1, answerGame1], [questionGame2, answerGame1], [questionGame3, answerGame1]]}
+indiceQuestion = 0
+indiceReponses = 1
+
+
+# tabQuestions = [tabQuestionGame1, tabQuestionGame2, tabQuestionGame3]
+# tabAnswers = [answerGame1, answerGame1, answerGame1]
 tabDescriptions = [descriptionJeu1, descriptionJeu2, descriptionJeu3]
 tabEpreuves = ["Epreuve 1", "Epreuve 2", "Epreuve 3"]
 
@@ -67,8 +77,6 @@ colorEmbedGoodAnswer = discord.Color.from_rgb(120, 177, 89)
 
 carreBlanc = "▫️"
 
-
-
 # Messages score et equipe gagnante
 titreScoreActuel = "Scores actuels"
 
@@ -79,7 +87,7 @@ titreWinner = "VAINQUEURS"
 colorYellowEmbedJeu = discord.Color.dark_red()
 
 
+
+
 # idSalon DBV
 idChannel = 917858064932163629
-
-
