@@ -1,14 +1,10 @@
-from PIL import Image
 from games import *
 from logs import *
 from token_2 import *
-from discord import Reaction
 from discord.utils import get
 
-import os
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-
 
 # Partie en cours ?
 global partieEnCours
@@ -53,6 +49,8 @@ async def on_ready():
 """
 @client.command(aliases=['s'])
 async def start(self, message):
+    global contexteExecution
+    contexteExecution= self
     message.lower()
     channel = self.channel
 
@@ -224,7 +222,7 @@ async def attente_joueur(payload):
     reactionEquipe2 = get(message.reactions, emoji=tabEmoji[indiceEquipe2])
 
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
-    if reactionEquipe1 and reactionEquipe2 and (reactionEquipe1.count == nombreJoueursEquipe1 and reactionEquipe2.count == nombreJoueursEquipe2):
+    if reactionEquipe1 and reactionEquipe2 and (reactionEquipe1.count >= nombreJoueursEquipe1 and reactionEquipe2.count == nombreJoueursEquipe2):
 
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users():
@@ -235,7 +233,7 @@ async def attente_joueur(payload):
                 tabPlayer[1].append(user.name)
 
         partieEnCours = True
-        await lancerJeux()
+        await lancerJeux(tabPlayer,contexteExecution)
 
 
 
@@ -259,6 +257,7 @@ async def button(ctx):
 
 @client.command()
 async def pixel(ctx):
+    print(os.path.splitext("sample.txt")[0])
     img = Image.open('gars.png')
     imgSmall = img.resize((12, 12), resample=Image.BILINEAR)
     result = imgSmall.resize(img.size, Image.NEAREST)
@@ -298,24 +297,25 @@ async def shutdown(ctx):
     await ctx.close()
 
 
-""" Commande d'arret du jeu.
-    On verifie si une partie est en cours ou non
-    si oui on redemarre le bot
-    si non on annonce qu'aucune partie n'est en cours
 
-"""
 @client.command()
 @commands.has_permissions(administrator=True)
 async def stop(ctx):
+    """ Commande d'arret du jeu.
+        On verifie si une partie est en cours ou non
+        si oui on redemarre le bot
+        si non on annonce qu'aucune partie n'est en cours
+
+    """
     if partieEnCours == True:
         embed = discord.Embed(
             title="Fin de la partie",
             color=discord.Color.from_rgb(19, 19, 19)
         )
         await ctx.channel.send(embed=embed)
-        await client.close()
-        await asyncio.sleep(2)
-        await client.connect()
+        await client.connect(reconnect=True)
+        """await asyncio.sleep(2)
+        await client.connect()"""
     else:
         embed = discord.Embed(
             title="Aucune partie est en cours !",
@@ -323,5 +323,36 @@ async def stop(ctx):
         )
         await ctx.channel.send(embed=embed)
 
+@client.command()
+async def getMember(self):
+    for guild in client.users:
+        print( guild)
+    async for guild in client.fetch_guilds(limit=150):
+        print(guild.name)
 
-client.run(TOKEN)
+        """guild = client.get_guild(idTeam2)
+        memberList = guild.members
+        print(memberList)"""
+
+@client.command()
+async def deuxLettres(self,mot):
+    indice = list("saperlipopette")
+    channel = client.get_channel(idChannel)
+    car1 = ''
+    car2 = ''
+    while car1 == car2:
+        car1 = random.randrange(0, len(indice))
+        car2 = random.randrange(0, len(indice))
+    for i in range(len(indice)):
+        if i != car1 and i != car2:
+            indice[i] = "_"
+
+    mot = "".join(indice)
+    print(mot)
+    return
+
+    await asyncio.sleep(2)
+
+    await channel.send(car1 + " " + car2)
+
+client.run(token)

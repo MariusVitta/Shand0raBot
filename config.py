@@ -1,9 +1,13 @@
 # Bot
 import discord
 from discord.ext import commands
-from discord_components import DiscordComponents, ComponentsBot, Button
+#from discord_components import DiscordComponents, ComponentsBot, Button
+import os
+from PIL import Image
+
 
 global tabPlayer
+global contexteExecution
 
 # ------------------------------------------------------------------------------------------------------------#
 # Gestion des commandes du bot
@@ -13,7 +17,7 @@ usageBot = "Usage: " + prefixBot + "start dvb or " + prefixBot + "s dvb "
 
 # CLIENT
 client = commands.Bot(command_prefix=prefixBot, description=descriptionBot)
-buttons = DiscordComponents(client)
+#buttons = DiscordComponents(client)
 
 # ------------------------------------------------------------------------------------------------------------#
 # Gestion des Equipes
@@ -59,9 +63,10 @@ questionGame2 = "Question 2 - 1"
 questionGame3 = "Question 3 - 1"
 
 answerGame1 = ["1"]
+answerGame2 = ["1","2"]
 
 # tableaux
-questions = {"One Piece": [[questionGame1, answerGame1], [questionGame2, answerGame1], [questionGame3, answerGame1]]}
+questions = {"One Piece": [[questionGame1, answerGame2], [questionGame2, answerGame2], [questionGame3, answerGame2]]}
 indiceQuestion = 0
 indiceReponses = 1
 
@@ -85,5 +90,11 @@ delaiEntreQuestions = 5
 
 
 # ------------------------------------------------------------------------------------------------------------#
+# GESTION DES IMAGES
+path = 'images'
+pathFlou = 'imagesFloues'
+
 # idSalon DBV
 idChannel = 917858064932163629
+idTeam1 = 917917672820322305
+idTeam2 = 917857849537859625
