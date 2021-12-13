@@ -108,14 +108,14 @@ async def printPlayer():
     channel = client.get_channel(idChannel)
     team1, team2 = "", ""
     for player in tabPlayer[0]:
-        team1 += "`" + player + "`\n"
+        team1 += "- `" + player + "`\n"
     for player in tabPlayer[1]:
-        team2 += "`" + player + "`\n"
+        team2 += "- `" + player + "`\n"
     embed = discord.Embed(
         title=titreDBV,
-        description=debutPartieDBV + tabEmoji[indiceEquipe1] + "\n" + tabRoleBold[
-            indiceEquipe1] + "\n" + team1 + "\n\n" + tabEmoji[indiceEquipe2] + "\n" + tabRoleBold[
-                        indiceEquipe2] + "\n" + team2,
+        description=debutPartieDBV + carreBlanc + tabEmoji[indiceEquipe1] + " **" + tabRoleBold[
+            indiceEquipe1] + "**\n" + team1 + "\n" + carreBlanc + tabEmoji[indiceEquipe2] + " **" + tabRoleBold[
+                        indiceEquipe2] + "**\n" + team2,
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
@@ -248,7 +248,13 @@ async def jeu(numeroJeu):
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         if len(questionReponses[indiceReponses]) > 1:
             #ctx = await client.get_context(channel)
-            await contexteExecution.send(questions1[0][0], view=Quiz(0))
+            embed = discord.Embed(
+                title=questions1[0][0],
+                color=colorEmbedWhiteDBV
+            )
+            await contexteExecution.send(embed=embed)
+            await asyncio.sleep(3)
+            await contexteExecution.send(" ‏‏‎ ", view=Quiz(0))
             await affichage(numeroJeu)
             pass
 

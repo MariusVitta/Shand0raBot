@@ -75,7 +75,7 @@ async def start(self, message):
             description=descriptionDBV,
             color=colorEmbedWhiteDBV
         )
-        choix = await channel.send(embed=embed)
+        choix = await channel.send(embed=embed,delete_after=30.0)
 
         # ajout des réactions au message du bot
         for emoji in tabEmoji:

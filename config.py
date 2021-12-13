@@ -40,7 +40,7 @@ indiceEquipe2 = 1
 messageStart = 'dvb'
 titreDBV = "🎮 Davy Back Fight"
 descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n " \
-                 "🔸 Pour rejoindre une équipe réagit à l'un des émojis \n\n " \
+                 "🔸 Pour rejoindre une équipe réagis à l'un des émojis \n\n " \
                  "▫️ ☠️ Mugiwara \n\n" \
                  "▫️ 🦊 Foxy"
 colorEmbedWhiteDBV = discord.Color.from_rgb(255, 255, 255)
@@ -97,4 +97,4 @@ pathFlou = 'imagesFloues'
 # idSalon DBV
 idChannel = 917858064932163629
 idTeam1 = 917917672820322305
-idTeam2 = 917857849537859625
+idTeam2 = 917922031729799218
