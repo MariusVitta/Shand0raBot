@@ -49,7 +49,6 @@ tabTextEpreuve = ["🔹 **Epreuve 1 / 3**", "🔹 **Epreuve 2 / 3**", "🔹 **Ep
 phraseQuestion = "▫️ **Question**"
 carreBlanc = "▫️"
 
-
 tabEpreuves = ["Epreuve 1", "Epreuve 2", "Epreuve 3"]
 descriptionJeu1 = "🔹 **Epreuve 1 / 3** \n\n" + phraseQuestion
 descriptionJeu2 = "🔹 **Epreuve 2 / 3** \n\n" + phraseQuestion
@@ -62,8 +61,8 @@ questionGame1 = "Question 1 - 1"
 questionGame2 = "Question 2 - 1"
 questionGame3 = "Question 3 - 1"
 
-answerGame1 = ["1"]
-answerGame2 = ["1","2"]
+answerGame1 = ["Luffy"]
+answerGame2 = ["Luffy"]
 
 # tableaux
 questions = {"One Piece": [[questionGame1, answerGame2], [questionGame2, answerGame2], [questionGame3, answerGame2]]}
@@ -83,17 +82,27 @@ pointVert = "🟢 "
 textGoodAnswer = " a donné la bonne réponse"
 colorEmbedGoodAnswer = discord.Color.from_rgb(120, 177, 89)
 
+# ----- INDICES -----
+nombreTentatives = 2 # nombre de fois que le bot va attendre avant d'envoyer la bonne réponse (envoie un incide à `nombreTentatives`\2`)
+
 # ------------------------------------------------------------------------------------------------------------#
 # GESTIONS DU DELAI
 delaiEntreEpreuves = 5
 delaiEntreQuestions = 5
+delaiJoinMessage = 30
+delaiQuestions = 20
+delaiDebutPartie = 3
+delaiReponse = 5
 
 
 # ------------------------------------------------------------------------------------------------------------#
 # GESTION DES IMAGES
 path = 'images'
 pathFlou = 'imagesFloues'
+tabTailleResize = [4, 8, 12, 16, 20]
 
+# ------------------------------------------------------------------------------------------------------------#
+# GESTION DES IMAGES
 # idSalon DBV
 idChannel = 917858064932163629
 idTeam1 = 917917672820322305

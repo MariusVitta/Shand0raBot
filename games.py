@@ -16,11 +16,12 @@ async def initVar():
     """ Méthode d'initialisation des variables globales.
 
     """
-    global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions, valTeam1, valTeam2, tabPlayer
+    global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions, valTeam1, valTeam2, tabPlayer, channel
     pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
     tabQuestions = questions["One Piece"]
     random.shuffle(tabQuestions)
     valTeam1, valTeam2 = "", ""
+    channel = client.get_channel(idChannel)
 
 
 async def calculPoints(messageAuthor):
@@ -50,8 +51,6 @@ async def printWinners():
         affiche le resultat dans un embed
 
     """
-    channel = client.get_channel(idChannel)
-
     descriptionWinners = "🏆  Vainqueur\n\n"
     if pointsTeam2 > pointsTeam1:
         vainqueurs = foxyBoutonBlanc + "` " + str(pointsTeam2) + " points`" + medaillePremier
@@ -78,8 +77,6 @@ async def printScore(numEpreuve: int):
             numéro de l'épreuve en cours
 
     """
-
-    channel = client.get_channel(idChannel)
     descriptionScore = tabTextEpreuve[numEpreuve] + "\n\n" + \
                        tabEmoji[0] + \
                        "\n" + \
@@ -105,7 +102,6 @@ async def printPlayer():
     """
 
     global tabPlayer
-    channel = client.get_channel(idChannel)
     team1, team2 = "", ""
     for player in tabPlayer[0]:
         team1 += "- `" + player + "`\n"
@@ -128,19 +124,115 @@ async def affichage(numeroJeu):
     elif numeroJeu != (len(tabEpreuves) - 1):
         await nextEpreuve()
     indiceTab += 1
-    pass
+    return
 
 
-async def jeuImage(numeroJeu):
-    global indiceTab
-    channel = client.get_channel(idChannel)
+async def printEmbedImage(fichier: str):
+    """ Methode d'affichage des messages du jeu.
+
+    """
+    global numeroJeu
+    embed = discord.Embed(
+        title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numeroJeu],
+        description=carreBlanc + "Qui est ce personnage ?",
+        color=colorEmbedWhiteDBV
+    )
+    embed.set_image(url="attachment://" + fichier)
+    await channel.send(file=discord.File(pathFlou + "/" + fichier), embed=embed)
+
+
+async def printEmbedTimeoutImage(fichier: str, reponse: str):
+    """ Methode d'affichage des messages du jeu.
+
+    """
+    embed = discord.Embed(
+        title=timeout,
+        description=reponseText + "`" + str(reponse) + "`",
+        color=colorEmbedTimeout
+    )
+    embed.set_image(url="attachment://" + fichier)
+    await channel.send(file=discord.File(path + "/" + fichier), embed=embed)
+
+
+async def printEmbedBonneReponseImage(fichier: str, reponse: str, messageSender: any):
+    """ Methode d'affichage des messages du jeu.
+
+    """
+    embed = discord.Embed(
+        title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
+        description=reponseText + "`" + str(reponse) + "`\n\n" +
+                    carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
+            pointsTeam1) + " points``` \n\n" + \
+                    carreBlanc + " " + tabEmoji[1] + " " + tabRoleBold[1] + valTeam2 + str(
+            pointsTeam2) + " points``` \n\n",
+        color=colorEmbedGoodAnswer,
+    )
+    embed.set_image(url="attachment://" + fichier)
+    await channel.send(file=discord.File(path + "/" + fichier), embed=embed)
+
+
+async def printEmbedBonneReponse(answer: str, messageSender: any):
+    """ Methode d'affichage des messages du jeu.
+
+    """
+    embed = discord.Embed(
+        title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
+        description=reponseText + "`" + str(answer) + "`\n\n" +
+                    carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
+            pointsTeam1) + " points``` \n\n" + \
+                    carreBlanc + " " + tabEmoji[1] + " " + tabRoleBold[1] + valTeam2 + str(
+            pointsTeam2) + " points``` \n\n",
+        color=colorEmbedGoodAnswer,
+    )
+    await channel.send(embed=embed)
+
+
+async def printEmbedTimeout(answer: str):
+    """ Methode d'affichage des messages du jeu.
+
+    """
+    embed = discord.Embed(
+        title=timeout,
+        description=reponseText + "`" + str(answer) + "`",
+        color=colorEmbedTimeout
+    )
+    await channel.send(embed=embed)
+
+
+async def printEmbedQuestions(questionReponses):
+    """ Methode d'affichage des messages du jeu.
+
+    """
+    embed = discord.Embed(
+        title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numeroJeu],
+        description=carreBlanc + questionReponses[indiceQuestion],
+        color=colorEmbedWhiteDBV
+    )
+    await channel.send(embed=embed)
+
+
+def traitementImage(fichier: str, valeurResize: int):
+    """ Methode de traitement de l'image.
+
+    """
+    img = Image.open(path + "/" + fichier)
+    imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
+    result = imgSmall.resize(img.size, Image.NEAREST)
+    result.save(pathFlou + "/" + fichier)
+
+    return
+
+
+async def jeuImage(numJeu):
+    global indiceTab, numeroJeu
+    numeroJeu = numJeu
     indiceTab = 0
     bonneReponse = ""
 
     def traitementNom(nomFichier):
         tempName = os.path.splitext(nomFichier)
         bonneReponse = tempName[0].replace("_", " ")
-        return bonneReponse;
+        return bonneReponse
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
@@ -158,76 +250,57 @@ async def jeuImage(numeroJeu):
     files = os.listdir(path)
     random.shuffle(files)
     for f in files:
-        img = Image.open(path + "/" + f)
-        imgSmall = img.resize((12, 12), resample=Image.BILINEAR)
-        result = imgSmall.resize(img.size, Image.NEAREST)
-        result.save(pathFlou + "/" + f)
+        traitementImage(f, tabTailleResize[0])
+        await printEmbedImage(f)
 
-        embed = discord.Embed(
-            title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numeroJeu],
-            description=carreBlanc + "Qui est ce personnage ?",
-            color=colorEmbedWhiteDBV
-        )
-        embed.set_image(url="attachment://" + f)
-        await channel.send(file=discord.File(pathFlou + "/" + f), embed=embed)
-
+        # récuperation du bon nom de l'image
         bonneReponse = traitementNom(f)
-        # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
-        try:
-            message = await client.wait_for("message", timeout=20, check=checkMessage)
-            # time.sleep(5)
-            # await printClue(bonneReponse)
-        # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
-        except asyncio.TimeoutError:
-            reponse = bonneReponse
-            embed = discord.Embed(
-                title=timeout,
-                description=reponseText + "`" + str(reponse) + "`",
-                color=colorEmbedTimeout
-            )
-            embed.set_image(url="attachment://" + f)
-            await channel.send(file=discord.File(path + "/" + f), embed=embed)
 
-            if indiceTab != len(files) - 1:
-                await nextQuestion()
-            indiceTab += 1
+        for valeurResize in tabTailleResize[1:]:  # on exclut le premier item car on l'a deja traité
+            # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
+            try:
+                message = await client.wait_for("message", timeout=delaiQuestions / len(tabTailleResize),
+                                                check=checkMessage)
+                # time.sleep(5)
+                # await printClue(bonneReponse)
+            # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
+            except asyncio.TimeoutError:
+                if valeurResize != tabTailleResize[-1]:
+                    traitementImage(f, valeurResize)
+                    await printEmbedImage(f)
+                else:  # on est arrivé au bout du tableau et on affiche la bonne réponse
+                    reponse = bonneReponse
+                    await printEmbedTimeoutImage(f, reponse)
 
-        # sinon on met à jour les points de l'equipe qui a marqué un point,
-        # on affiche l'auteur du bon message dans un
-        # embed et les points des equipes
-        else:
-            await calculPoints(message.author)
-            reponse = bonneReponse
-            embed = discord.Embed(
-                title=pointVert + str(message.author.name) + textGoodAnswer + "\n\n",
-                description=reponseText + "`" + str(reponse) + "`\n\n" +
-                            carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
-                    pointsTeam1) + " points``` \n\n" + \
-                            carreBlanc + " " + tabEmoji[1] + " " + tabRoleBold[1] + valTeam2 + str(
-                    pointsTeam2) + " points``` \n\n",
-                color=colorEmbedGoodAnswer,
-            )
-            embed.set_image(url="attachment://" + f)
-            await channel.send(file=discord.File(path + "/" + f), embed=embed)
-            if indiceTab != len(files) - 1:
-                await nextQuestion()
-            indiceTab += 1
+                    if indiceTab != len(files) - 1:
+                        await nextQuestion()
+                    indiceTab += 1
+
+            # sinon on met à jour les points de l'equipe qui a marqué un point,
+            # on affiche l'auteur du bon message dans un
+            # embed et les points des equipes
+            else:
+                await calculPoints(message.author)
+                reponse = bonneReponse
+                await printEmbedBonneReponseImage(f, reponse, message)
+                if indiceTab != len(files) - 1:
+                    await nextQuestion()
+                indiceTab += 1
 
     await nextEpreuve()
     return
 
 
-async def jeu(numeroJeu):
-    global contexteExecution
+async def jeu(numJeu):
     """ Méthode principale du jeu version quiz.
 
         Parameters
         ----------
-        numeroJeu : int
-            Numéro du jeu actuel
+            :param numJeu :
+                Numéro du jeu actuel
     """
-    global indiceTab
-    channel = client.get_channel(idChannel)
+    global contexteExecution, indiceTab, numeroJeu
+    numeroJeu = numJeu
     indiceTab = 0
 
     def checkMessage(m):
@@ -247,59 +320,45 @@ async def jeu(numeroJeu):
 
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         if len(questionReponses[indiceReponses]) > 1:
-            #ctx = await client.get_context(channel)
             embed = discord.Embed(
                 title=questions1[0][0],
                 color=colorEmbedWhiteDBV
             )
             await contexteExecution.send(embed=embed)
-            await asyncio.sleep(3)
+            await asyncio.sleep(delaiDebutPartie)
             await contexteExecution.send(" ‏‏‎ ", view=Quiz(0))
             await affichage(numeroJeu)
             pass
 
         else:
-            embed = discord.Embed(
-                title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numeroJeu],
-                description=carreBlanc + questionReponses[indiceQuestion],
-                color=colorEmbedWhiteDBV
-            )
-            await channel.send(embed=embed)
+            await printEmbedQuestions(questionReponses)
+            await asyncio.sleep(delaiDebutPartie)
+            for nbAffichage in range(nombreTentatives):
+                print(nbAffichage)
+                # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
+                try:
+                    message = await client.wait_for("message", timeout=delaiQuestions / nombreTentatives,
+                                                    check=checkMessage)
 
-            # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
-            try:
-                message = await client.wait_for("message", timeout=20, check=checkMessage)
-                """time.sleep(5)
-                await printClue(questionReponses[indiceReponses][0])"""
-            # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
-            except asyncio.TimeoutError:
-                reponse = questionReponses[indiceReponses][0]
-                embed = discord.Embed(
-                    title=timeout,
-                    description=reponseText + "`" + str(reponse) + "`",
-                    color=colorEmbedTimeout
-                )
-                await channel.send(embed=embed)
+                # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
+                except asyncio.TimeoutError:
+                    if nbAffichage == nombreTentatives / 2: # affichage de la bonne réponse
+                        print("!no")
+                        reponse = questionReponses[indiceReponses][0]
+                        await printEmbedTimeout(reponse)
+                        await affichage(numeroJeu)
+                    else:  # affichage de l'indice
+                        print("Yes")
+                        await printClue(questionReponses[indiceReponses][0])
 
-                await affichage(numeroJeu)
-
-            # sinon on met à jour les points de l'equipe qui a marqué un point,
-            # on affiche l'auteur du bon message dans un
-            # embed et les points des equipes
-            else:
-                await calculPoints(message.author)
-                reponse = questionReponses[indiceReponses][0]
-                embed = discord.Embed(
-                    title=pointVert + str(message.author.name) + textGoodAnswer + "\n\n",
-                    description=reponseText + "`" + str(reponse) + "`\n\n" +
-                                carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
-                        pointsTeam1) + " points``` \n\n" + \
-                                carreBlanc + " " + tabEmoji[1] + " " + tabRoleBold[1] + valTeam2 + str(
-                        pointsTeam2) + " points``` \n\n",
-                    color=colorEmbedGoodAnswer,
-                )
-                await channel.send(embed=embed)
-                await affichage(numeroJeu)
+                # sinon on met à jour les points de l'equipe qui a marqué un point,
+                # on affiche l'auteur du bon message dans un
+                # embed et les points des equipes
+                else:
+                    await calculPoints(message.author)
+                    reponse = questionReponses[indiceReponses][0]
+                    await printEmbedBonneReponse(reponse,message)
+                    await affichage(numeroJeu)
 
     return
 
@@ -310,7 +369,7 @@ async def nextQuestion():
     """
     await asyncio.sleep(delaiEntreQuestions)
     await printEmbedNextQuestion()
-    await asyncio.sleep(delaiEntreQuestions)
+    await asyncio.sleep(delaiDebutPartie)
 
 
 async def nextEpreuve():
@@ -319,14 +378,13 @@ async def nextEpreuve():
     """
     await asyncio.sleep(delaiEntreEpreuves)
     await printEmbedNextEpreuve()
-    await asyncio.sleep(delaiEntreEpreuves)
+    await asyncio.sleep(delaiDebutPartie)
 
 
 async def printEmbedNextEpreuve():
     """ Methode d'affichage des messages du jeu.
 
     """
-    channel = client.get_channel(idChannel)
     embed = discord.Embed(
         title="Epreuve suivante",
         description="▫️ (Nom de l'épreuve)",
@@ -339,7 +397,6 @@ async def printEmbedNextQuestion():
     """ Methode d'affichage des messages du jeu.
 
     """
-    channel = client.get_channel(idChannel)
     embed = discord.Embed(
         title="Prochaine question",
         color=colorEmbedWhiteDBV
@@ -351,7 +408,6 @@ async def printEmbedDebutPartie():
     """ Methode d'affichage des messages du jeu.
 
     """
-    channel = client.get_channel(idChannel)
     embed = discord.Embed(
         title="La partie va démarrer",
         color=colorEmbedWhiteDBV
@@ -360,16 +416,23 @@ async def printEmbedDebutPartie():
 
 
 async def printClue(mot):
-    channel = client.get_channel(idChannel)
+    """ Methode d'affichage des indices du jeu.
+
+        Parameters
+        ---------
+        :param mot : string
+            mot dont on va faire afficher 2 lettres en tant qu'indice
+    """
     car1, car2 = 1, 1
     listMot = list(mot)
-    while car1 == car2:
+    while car1 == car2: #on evite de choisir 2 fois la meme lettres à faire afficher en indice
         car1 = random.randrange(0, len(listMot))
         car2 = random.randrange(0, len(listMot))
-    for i in range(len(listMot)):
+    for i in range(len(listMot)): # on tranforme tout sauf les 2 lettres selectionnés en underscore
         if i != car1 and i != car2:
             listMot[i] = "_"
     indice = "".join(listMot)
+
     embed = discord.Embed(
         title="⭐ Indice: " + indice,
         color=discord.Color.from_rgb(255, 255, 0)
@@ -379,29 +442,37 @@ async def printClue(mot):
 
 async def lancerJeux(tabJoueur, ctx):
     """ Methode de lancement du jeu.
-        initialise les variables et lance l'ensemble des jeux
-tabPlayer
+        Initialise les variables et lance l'ensemble des jeux
+
+        Parameters
+        ----------
+        :param tabJoueur : Array
+            tableau de string contenant le nom de l'ensemble des joueurs
+        :param ctx : Context
+            contexte d'execution, nous sert principalement afin d'afficher les messages avec des boutons
     """
-    global tabPlayer,contexteExecution
+
+    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution
+    await initVar()
     tabPlayer = tabJoueur
     contexteExecution = ctx
-    await initVar()
-    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2
     await printPlayer()
-    await asyncio.sleep(3)
+    await asyncio.sleep(delaiDebutPartie)
     await printEmbedDebutPartie()
+    await asyncio.sleep(delaiDebutPartie)
 
-    await jeu(0)
-    numeroJeu += 1
+    await jeu(numeroJeu)
+
     await jeuImage(1)
-    return
 
-    for numeroJeu in range(3):
+    pass
+
+    """for numeroJeu in range(3):
         # JEU 1
         await jeu(numeroJeu)
 
         # on patiente 3 secondes après l'affichage des scores
-        await asyncio.sleep(3)
+        await asyncio.sleep(3)"""
 
     pointsTeam2 = 0
     pointsTeam1 = 0
