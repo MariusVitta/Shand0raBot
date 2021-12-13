@@ -1,7 +1,6 @@
 # Bot
 import discord
 from discord.ext import commands
-#from discord_components import DiscordComponents, ComponentsBot, Button
 import os
 from PIL import Image
 

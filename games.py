@@ -334,7 +334,6 @@ async def jeu(numJeu):
             await printEmbedQuestions(questionReponses)
             await asyncio.sleep(delaiDebutPartie)
             for nbAffichage in range(nombreTentatives):
-                print(nbAffichage)
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
                 try:
                     message = await client.wait_for("message", timeout=delaiQuestions / nombreTentatives,
@@ -343,12 +342,10 @@ async def jeu(numJeu):
                 # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
                 except asyncio.TimeoutError:
                     if nbAffichage == nombreTentatives / 2: # affichage de la bonne réponse
-                        print("!no")
                         reponse = questionReponses[indiceReponses][0]
                         await printEmbedTimeout(reponse)
                         await affichage(numeroJeu)
                     else:  # affichage de l'indice
-                        print("Yes")
                         await printClue(questionReponses[indiceReponses][0])
 
                 # sinon on met à jour les points de l'equipe qui a marqué un point,

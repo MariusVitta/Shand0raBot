@@ -82,6 +82,8 @@ async def start(self, message):
 
         # suppression du message envoyé par l'utilisateur
         await client.delete_message(self.message)
+    else:
+        await start_error(self, discord.ext.commands.ArgumentParsingError)
 
 
 @start.error
@@ -101,6 +103,12 @@ async def start_error(ctx, error):
         await ctx.send(usageBot)
         return
 
+
+
+@client.command()
+async def display(ctx):
+    print(type(ctx.author))
+    await ctx.channel.send(ctx.author.display_name)
 
 @client.command()
 async def restart(self):
@@ -224,9 +232,11 @@ async def attente_joueur(payload):
 
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users():
+            print(user.nick);
             if not user.bot:
                 tabPlayer[0].append(user.name)
         async for user in reactionEquipe2.users():
+            print(user.nick);
             if not user.bot:
                 tabPlayer[1].append(user.name)
 
@@ -242,7 +252,7 @@ async def clear(ctx):
         Requiert d'être admin sur le serveur
 
     """
-    await ctx.channel.purge()
+    await ctx.channel.purge(limit=20)
 
 
 @client.event
@@ -293,36 +303,7 @@ async def stop(ctx):
 
 @client.command()
 async def getMember(self):
-    for guild in client.users:
-        print(guild)
-    async for guild in client.fetch_guilds(limit=150):
-        print(guild.name)
-
-        """guild = client.get_guild(idTeam2)
-        memberList = guild.members
-        print(memberList)"""
-
-
-@client.command()
-async def deuxLettres(self, mot):
-    indice = list("saperlipopette")
-    channel = client.get_channel(idChannel)
-    car1 = ''
-    car2 = ''
-    while car1 == car2:
-        car1 = random.randrange(0, len(indice))
-        car2 = random.randrange(0, len(indice))
-    for i in range(len(indice)):
-        if i != car1 and i != car2:
-            indice[i] = "_"
-
-    mot = "".join(indice)
-    print(mot)
-    return
-
-    await asyncio.sleep(2)
-
-    await channel.send(car1 + " " + car2)
+    pass
 
 
 client.run(token)
