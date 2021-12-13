@@ -69,6 +69,7 @@ async def start(self, message):
 
     # verification que le message est bien "dvb"
     if message == messageStart:
+        await choixNombreJoueurs()
         embed = discord.Embed(
             title=titreDBV,
             description=descriptionDBV,
@@ -101,14 +102,68 @@ async def start_error(ctx, error):
     """
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
         await ctx.send(usageBot)
+    if isinstance(error, discord.ext.commands.errors.ArgumentParsingError):
+        await ctx.send(usageBot)
+    return
+
+
+@client.command()
+async def checkString(self, message):
+    chaineADeviner = "Smoker"
+    moitie = len(chaineADeviner) / 2 + 1
+    if message.lower().startswith(chaineADeviner[0:int(moitie)].lower()):
+        await self.channel.send("Bien joué")
+    else:
+        await self.channel.send("Vous n'êtes pas loin de la réponse !")
+    return
+
+
+async def choixNombreJoueurs():
+    """ Methode qui prend en compte le nombre de joueurs dans la partie
+
+    """
+    global nombreJoueurs
+    embed = discord.Embed(
+        title="Nombres de joueurs dans la partie ?",
+        description=carreBlanc + " 2\n️️" + carreBlanc + " 3\n" + carreBlanc + " 4\n" + carreBlanc + " 5️️\n" + carreBlanc + " 6\n️️" + carreBlanc + " 7\n",
+        color=colorEmbedWhiteDBV
+    )
+    message = await client.wait_for("reaction_add")
+    await client.get_channel(idChannel).send(embed=embed)
+
+
+@client.command()
+async def checkString2(self, message):
+    answer = "Sentomaru"
+    tabCarAnswer = list(answer.lower())
+    tabCarUserAnswer = list(message.lower())
+    tabLettresRestantesUserAnswer = []
+    tabLettresRestantesAnswer = []
+
+    tailleUserAnswer = len(tabCarUserAnswer)
+    tailleAnswer = len(tabCarAnswer)
+
+    # on s'occupe pas du cas ou les 2 chaines ont une taille différentes
+    if tailleUserAnswer != tailleAnswer:
         return
 
+    for i in range(tailleUserAnswer):
+        if tabCarAnswer[i] != tabCarUserAnswer[i]:
+            tabLettresRestantesUserAnswer.append(tabCarUserAnswer[i])
+            tabLettresRestantesAnswer.append(tabCarAnswer[i])
+
+    if all(lettre in tabLettresRestantesUserAnswer for lettre in tabLettresRestantesAnswer) and (
+            len(tabLettresRestantesUserAnswer) == 2) and (len(tabLettresRestantesAnswer) == 2):
+        await self.channel.send("Bien joué")
+    elif len(tabLettresRestantesUserAnswer) == 2 and len(tabLettresRestantesAnswer) == 2:
+        await self.channel.send("Vous n'êtes pas loin de la réponse !")
 
 
 @client.command()
 async def display(ctx):
     print(type(ctx.author))
     await ctx.channel.send(ctx.author.display_name)
+
 
 @client.command()
 async def restart(self):
