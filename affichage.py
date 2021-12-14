@@ -43,7 +43,7 @@ def traitementTabReponse(tabReponses: [str]):
     """
     reponsesFormat = ""
     for rep in tabReponses:
-        reponsesFormat += rep + ","
+        reponsesFormat += rep + (", " if rep != tabReponses[-1] else "")
     return reponsesFormat
 
 
