@@ -1,9 +1,5 @@
-import typing
+from imports import *
 
-import discord
-from discord import Interaction
-
-# from discord_components import Interaction
 
 questions1 = [["Quel est le plus beau fruit du démon ?",
                ["Suna Suna no Mi", "Gomu Gomu no Mi", "Il lui retient son bras", "Ope Ope no Mi"],

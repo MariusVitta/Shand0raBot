@@ -1,7 +1,6 @@
 from games import *
 from logs import *
 from token_2 import *
-from discord.utils import get
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -34,6 +33,19 @@ async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
 
 
+async def choixNombreJoueurs():
+    """ Methode qui prend en compte le nombre de joueurs dans la partie
+
+    """
+    global nombreJoueurs
+    embed = discord.Embed(
+        title="Nombres de joueurs dans la partie ?",
+        description=carreBlanc + " 2\n️️" + carreBlanc + " 3\n" + carreBlanc + " 4\n" + carreBlanc + " 5️️\n" + carreBlanc + " 6\n️️" + carreBlanc + " 7\n",
+        color=colorEmbedWhiteDBV
+    )
+    #message = await client.wait_for("reaction_add")
+    await client.get_channel(idChannel).send(embed=embed)
+
 @client.command(aliases=['s'])
 async def start(self, message):
     """ Commande de lancement du bot.
@@ -52,6 +64,7 @@ async def start(self, message):
     message.lower()
     channel = self.channel
 
+
     # gestion du mauvais salon
     if idChannel != self.channel.id:
         await self.channel.send(
@@ -68,23 +81,23 @@ async def start(self, message):
         return
 
     # verification que le message est bien "dvb"
-    if message == messageStart:
-        await choixNombreJoueurs()
+    if message.lower() == messageStart.lower():
+
+        #await choixNombreJoueurs()
         embed = discord.Embed(
             title=titreDBV,
             description=descriptionDBV,
             color=colorEmbedWhiteDBV
         )
         choix = await channel.send(embed=embed, delete_after=30.0)
-
         # ajout des réactions au message du bot
         for emoji in tabEmoji:
             await choix.add_reaction(emoji)
 
         # suppression du message envoyé par l'utilisateur
         await client.delete_message(self.message)
-    else:
-        await start_error(self, discord.ext.commands.ArgumentParsingError)
+    #else:
+     #   await start_error(self, discord.ext.commands.ArgumentParsingError)
 
 
 @start.error
@@ -118,18 +131,6 @@ async def checkString(self, message):
     return
 
 
-async def choixNombreJoueurs():
-    """ Methode qui prend en compte le nombre de joueurs dans la partie
-
-    """
-    global nombreJoueurs
-    embed = discord.Embed(
-        title="Nombres de joueurs dans la partie ?",
-        description=carreBlanc + " 2\n️️" + carreBlanc + " 3\n" + carreBlanc + " 4\n" + carreBlanc + " 5️️\n" + carreBlanc + " 6\n️️" + carreBlanc + " 7\n",
-        color=colorEmbedWhiteDBV
-    )
-    message = await client.wait_for("reaction_add")
-    await client.get_channel(idChannel).send(embed=embed)
 
 
 @client.command()
@@ -143,7 +144,7 @@ async def checkString2(self, message):
     tailleUserAnswer = len(tabCarUserAnswer)
     tailleAnswer = len(tabCarAnswer)
 
-    # on s'occupe pas du cas ou les 2 chaines ont une taille différentes
+    # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
     if tailleUserAnswer != tailleAnswer:
         return
 
@@ -172,7 +173,7 @@ async def restart(self):
 
         Parameters
         ----------
-            :param self:
+            :param self :
                 contexte d'execution
     """
     await start(self, 'dvb')
@@ -287,16 +288,14 @@ async def attente_joueur(payload):
 
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users():
-            print(user.nick);
             if not user.bot:
                 tabPlayer[0].append(user.name)
         async for user in reactionEquipe2.users():
-            print(user.nick);
             if not user.bot:
                 tabPlayer[1].append(user.name)
 
         partieEnCours = True
-        await lancerJeux(tabPlayer, contexteExecution)
+        partieEnCours = await lancerJeux(tabPlayer, contexteExecution)
 
 
 @client.command()
@@ -358,6 +357,11 @@ async def stop(ctx):
 
 @client.command()
 async def getMember(self):
+    guild = await(client.fetch_guild(idTeam1))
+    role = discord.utils.get(guild.members, name=tabRole[0])
+    for r in role:
+        await client.get_channel(idChannel).send(r.display_name)
+    #role = discord.utils.get(guild.roles, name=tabRole[1])
     pass
 
 
