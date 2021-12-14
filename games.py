@@ -254,7 +254,7 @@ async def lancerJeux(tabJoueur, ctx):
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
 
-    # await jeu(numeroJeu)
+    await jeu(numeroJeu)
 
     await jeuImage(1)
 

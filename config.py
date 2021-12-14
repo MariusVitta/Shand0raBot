@@ -63,7 +63,8 @@ answerGame1 = ["Luffy"]
 answerGame2 = ["Luffy"]
 
 # tableaux
-questions = {"One Piece": [[questionGame1, answerGame2], [questionGame2, answerGame2], [questionGame3, answerGame2]],
+questions = {"One Piece": [["Quel pirate de l'équipage de Shanks s'est occupé des brigands à lui tout seul", "Ben Beckman"], ["La planque secrète de Ivankov à Impeldown se trouve à l'étage", "5.5"], ["En échange de sauver Luffy du poison de Magellan combien d'années de vie devait donner Luffy", "10 ans"],
+                           ["Combien de temps s'était écoulé à la fin du traitement de Ivankov", "moins de 24h"],"Selon le narrateur environ combien d'hommes de la marine attendaient que la bataille commence","10 000"],
              "Death Note": [[questionGame1, answerGame2], [questionGame2, answerGame2], [questionGame3, answerGame2]]
              }
 indiceQuestion = 0
