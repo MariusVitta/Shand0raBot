@@ -183,7 +183,10 @@ async def printEmbedBonneReponse(answer: [str], messageSender: any, pointsTeam1:
         :param valTeam2 : str
             string pour gerer l'affichage
     """
-    reponses = traitementTabReponse(answer)
+    if isinstance(answer, list):
+        reponses = traitementTabReponse(answer)
+    else:
+        reponses = answer
     embed = discord.Embed(
         title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
         description=reponseText + "`" + reponses + "`\n\n" +
@@ -204,7 +207,10 @@ async def printEmbedTimeout(answer: [str]):
         :param answer : [str]
             tableau des réponses
     """
-    reponses = traitementTabReponse(answer)
+    if isinstance(answer, list):
+        reponses = traitementTabReponse(answer)
+    else:
+        reponses = answer
     embed = discord.Embed(
         title=timeout,
         description=reponseText + "`" + reponses + "`",
@@ -276,12 +282,16 @@ async def printClue(mot):
     await channel.send(embed=embed)
 
 
-async def printPlayer():
+async def printPlayer(tabPlayer:[str]):
     """ Méthode d'affichage de l'ensemble des joueurs
 
+        Parameters
+        ----------
+        :param tabPlayer : [str]
+            tabeau contenant le non de tout les joueurs
 
     """
-    global tabPlayer,channel
+    global channel
     channel = client.get_channel(idChannel)
 
     team1, team2 = "", ""

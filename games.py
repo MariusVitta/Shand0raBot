@@ -249,7 +249,7 @@ async def lancerJeux(tabJoueur, ctx):
     await initVar()
     tabPlayer = tabJoueur
     contexteExecution = ctx
-    await printPlayer()
+    await printPlayer(tabPlayer)
     await asyncio.sleep(delaiDebutPartie)
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
