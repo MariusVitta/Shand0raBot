@@ -214,8 +214,8 @@ async def on_raw_reaction_add(payload):
 
     if member.bot:
         return
-    if payload.emoji.name != tabRole[0] or payload.emoji.name != tabRole[1]:
-        return
+    #if payload.emoji.name != tabRole[0] or payload.emoji.name != tabRole[1]:
+     #   return
     # Verification sur le salon afin d'eviter de prendre en compte des réactions dans des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = member.guild

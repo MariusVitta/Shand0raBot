@@ -218,20 +218,20 @@ async def printEmbedTimeout(answer: [str]):
     await channel.send(embed=embed)
 
 
-async def printEmbedQuestions(questionReponses, indiceTab: int, numJeu: int):
+async def printEmbedQuestions(questionReponses, numQuestion: int, numJeu: int):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
         :param questionReponses : [str]
             tableau des questions
-        :param indiceTab : int
-            indice sur la question actuelle
+        :param numQuestion : int
+            numéro de la question actuelle
         :param numJeu :int
             numéro du jeu actuel
     """
     embed = discord.Embed(
-        title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numJeu],
+        title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
         description=carreBlanc + questionReponses[indiceQuestion],
         color=colorEmbedWhiteDBV
     )

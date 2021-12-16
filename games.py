@@ -142,14 +142,11 @@ async def jeuImage(numJeu):
                         if tabCarAnswer[i].lower() != tabCarUser[i].lower():
                             wrongLettersUser.append(tabCarUser[i].lower())
                             goodLettersAnswer.append(tabCarAnswer[i].lower())
-                    print(wrongLettersUser)
-                    print(goodLettersAnswer)
+
                     if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
-                        print("test")
                         return True
 
                     elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
-                        print("est")
                         return False
 
         else:  # 3
@@ -173,7 +170,7 @@ async def jeuImage(numJeu):
 
         # pixelisation de l'image
         traitementImage(file, tabTailleResize[0], dossier)
-        await printEmbedImage(file, numJeu, indiceTab, dossier)
+        await printEmbedImage(file, numJeu, numQuestion, dossier)
 
         # récuperation du bon nom de l'image
         tabBonnesReponse = traitementNom(file)
@@ -273,10 +270,7 @@ async def jeu(numJeu):
         def contains_word(toGuest, userAnswer):
             return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
         ques = getQuestion()
-        print(question)
         rep = ques[1]
-
-        print("#1" + rep[0])
         if contains_word(rep[0].lower(), m.content.lower()):
             return True
 
@@ -298,14 +292,10 @@ async def jeu(numJeu):
                     if tabCarAnswer[i].lower() != tabCarUser[i].lower():
                         wrongLettersUser.append(tabCarUser[i].lower())
                         goodLettersAnswer.append(tabCarAnswer[i].lower())
-                print(wrongLettersUser)
-                print(goodLettersAnswer)
                 if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
-                    print("test")
                     return True
 
                 elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
-                    print("est")
                     return False
 
         else:  # 3
@@ -325,7 +315,6 @@ async def jeu(numJeu):
 
         questionsVues.append(question)
         questionActuelle = question
-        print(question)
         tabQandA = question
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         if len(tabQandA[indiceReponses]) > 1:
