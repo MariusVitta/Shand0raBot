@@ -1,7 +1,7 @@
 # Bot
 from imports import *
 
-global tabPlayer, channel, contexteExecution
+global tabPlayer, contexteExecution
 
 
 # ------------------------------------------------------------------------------------------------------------#
@@ -15,7 +15,6 @@ intents.presences = True
 
 # CLIENT
 client = commands.Bot(command_prefix=prefixBot, description=descriptionBot, intents=intents)
-# buttons = DiscordComponents(client)
 
 # ------------------------------------------------------------------------------------------------------------#
 # Gestion des Equipes
@@ -107,7 +106,4 @@ tabTailleResize = [8, 12, 16, 200]
 # ------------------------------------------------------------------------------------------------------------#
 # GESTION DE L'AFFICHAGE ETC
 # idSalon DBV
-idChannel = 917858064932163629
-idTeam1 = 917917672820322305
-idTeam2 = 917922031729799218
 

@@ -180,6 +180,7 @@ async def jeu(numJeu):
             -------
             :return bool True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
         """
+        print(tabQuestions[numeroJeu][1])
         return m.content.lower() in [rep.lower() for rep in tabQuestions[numeroJeu][1]] and m.channel == channel
 
     for questionReponses in tabQuestions:
@@ -254,7 +255,7 @@ async def lancerJeux(tabJoueur, ctx):
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
 
-    await jeu(numeroJeu)
+    #await jeu(numeroJeu)
 
     await jeuImage(1)
 

@@ -2,7 +2,13 @@ from games import *
 from logs import *
 from token_2 import *
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 TOKEN = os.getenv('DISCORD_TOKEN')
+GUILD = os.getenv('DISCORD_GUILD')
+IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
 global partieEnCours
@@ -43,8 +49,9 @@ async def choixNombreJoueurs():
         description=carreBlanc + " 2\n️️" + carreBlanc + " 3\n" + carreBlanc + " 4\n" + carreBlanc + " 5️️\n" + carreBlanc + " 6\n️️" + carreBlanc + " 7\n",
         color=colorEmbedWhiteDBV
     )
-    #message = await client.wait_for("reaction_add")
-    await client.get_channel(idChannel).send(embed=embed)
+    # message = await client.wait_for("reaction_add")
+    await client.get_channel(IDCHANNEL).send(embed=embed)
+
 
 @client.command(aliases=['s'])
 async def start(self, message):
@@ -64,11 +71,10 @@ async def start(self, message):
     message.lower()
     channel = self.channel
 
-
     # gestion du mauvais salon
-    if idChannel != self.channel.id:
-        await self.channel.send(
-            f"Je ne peux pas me lancer dans ce salon là :( \n ➡️ {client.get_channel(idChannel).mention}")
+    if IDCHANNEL != channel.id:
+        await channel.send(
+            f"Je ne peux pas me lancer dans ce salon là :( \n ➡️ {client.get_channel(IDCHANNEL).mention}")
         return
 
     # gestion de la partie en cours
@@ -79,11 +85,11 @@ async def start(self, message):
         )
         await self.channel.send(embed=embed)
         return
-
+    await removeRoles(self, [])
     # verification que le message est bien "dvb"
     if message.lower() == messageStart.lower():
 
-        #await choixNombreJoueurs()
+        # await choixNombreJoueurs()
         embed = discord.Embed(
             title=titreDBV,
             description=descriptionDBV,
@@ -96,8 +102,8 @@ async def start(self, message):
 
         # suppression du message envoyé par l'utilisateur
         await client.delete_message(self.message)
-    #else:
-     #   await start_error(self, discord.ext.commands.ArgumentParsingError)
+    # else:
+    #   await start_error(self, discord.ext.commands.ArgumentParsingError)
 
 
 @start.error
@@ -121,21 +127,21 @@ async def start_error(ctx, error):
 
 
 @client.command()
-async def checkString(self, message):
-    chaineADeviner = "Smoker"
+async def checkString(self, *, message):
+    chaineADeviner = "Killua"
     moitie = len(chaineADeviner) / 2 + 1
+    print(chaineADeviner[0:int(moitie)])
     if message.lower().startswith(chaineADeviner[0:int(moitie)].lower()):
-        await self.channel.send("Bien joué")
+        await self.channel.send(
+            "Bien joué, la chaine à deviner était:" + chaineADeviner + "\n votre réponse: " + message)
     else:
         await self.channel.send("Vous n'êtes pas loin de la réponse !")
     return
 
 
-
-
 @client.command()
-async def checkString2(self, message):
-    answer = "Sentomaru"
+async def checkString2(self, *, message):
+    answer = "Eren Jeager"
     tabCarAnswer = list(answer.lower())
     tabCarUserAnswer = list(message.lower())
     tabLettresRestantesUserAnswer = []
@@ -149,14 +155,15 @@ async def checkString2(self, message):
         return
 
     for i in range(tailleUserAnswer):
-        if tabCarAnswer[i] != tabCarUserAnswer[i]:
-            tabLettresRestantesUserAnswer.append(tabCarUserAnswer[i])
-            tabLettresRestantesAnswer.append(tabCarAnswer[i])
-
+        if tabCarAnswer[i].lower() != tabCarUserAnswer[i].lower():
+            tabLettresRestantesUserAnswer.append(tabCarUserAnswer[i].lower())
+            tabLettresRestantesAnswer.append(tabCarAnswer[i].lower())
+    print(tabLettresRestantesUserAnswer)
+    print(tabLettresRestantesAnswer)
     if all(lettre in tabLettresRestantesUserAnswer for lettre in tabLettresRestantesAnswer) and (
             len(tabLettresRestantesUserAnswer) == 2) and (len(tabLettresRestantesAnswer) == 2):
         await self.channel.send("Bien joué")
-    elif len(tabLettresRestantesUserAnswer) == 2 and len(tabLettresRestantesAnswer) == 2:
+    elif len(tabLettresRestantesUserAnswer) <= 2 and len(tabLettresRestantesAnswer) <= 2:
         await self.channel.send("Vous n'êtes pas loin de la réponse !")
 
 
@@ -199,7 +206,7 @@ async def on_raw_reaction_add(payload):
         return
 
     # Verification sur le salon afin d'eviter de prendre en compte des réactions dans des salons non voulus
-    if payload.channel_id == idChannel:
+    if payload.channel_id == IDCHANNEL:
         guild = member.guild
         emoji = payload.emoji.name
         # récuperation du role à assigner à l'utilisateur
@@ -224,7 +231,7 @@ async def on_raw_reaction_add(payload):
                 await member.remove_roles(ancienRole, reason=None, atomic=True)
 
             # on supprime son ancienne réaction
-            channel = client.get_channel(idChannel)
+            channel = client.get_channel(IDCHANNEL)
             message = await channel.fetch_message(payload.message_id)
             reaction0 = get(message.reactions, emoji=ancienEmoji[0])
             async for user in reaction0.users():
@@ -247,7 +254,7 @@ async def on_raw_reaction_remove(payload):
             ensemble des données lorsque l'évenement est réalisé
     """
     # Verification sur le salon afin d'eviter les traitements sur des salons non voulus
-    if payload.channel_id == idChannel:
+    if payload.channel_id == IDCHANNEL:
         guild = await(client.fetch_guild(payload.guild_id))
         emoji = payload.emoji.name
 
@@ -277,11 +284,11 @@ async def attente_joueur(payload):
     global partieEnCours, tabPlayer
     tabPlayer = [[], []]
 
-    channel = client.get_channel(idChannel)
+    channel = client.get_channel(IDCHANNEL)
     message = await channel.fetch_message(payload.message_id)
     reactionEquipe1 = get(message.reactions, emoji=tabEmoji[indiceEquipe1])
     reactionEquipe2 = get(message.reactions, emoji=tabEmoji[indiceEquipe2])
-
+    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
             reactionEquipe1.count >= nombreJoueursEquipe1 and reactionEquipe2.count == nombreJoueursEquipe2):
@@ -289,13 +296,14 @@ async def attente_joueur(payload):
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users():
             if not user.bot:
-                tabPlayer[0].append(user.name)
+                tabPlayer[0].append(guild.get_member(user.id).display_name)
         async for user in reactionEquipe2.users():
             if not user.bot:
-                tabPlayer[1].append(user.name)
-
+                tabPlayer[1].append(guild.get_member(user.id).display_name)
+        await removeRoles(payload, tabPlayer)
         partieEnCours = True
         partieEnCours = await lancerJeux(tabPlayer, contexteExecution)
+        await removeRoles(payload, tabPlayer)
 
 
 @client.command()
@@ -355,14 +363,27 @@ async def stop(ctx):
         await ctx.channel.send(embed=embed)
 
 
+async def removeRoles(ctx, players: [str]):
+    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+    roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
+    roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
+
+    for member in guild.members:
+        if member.bot:
+            pass
+        elif roleTeam1 not in member.roles and roleTeam2 not in member.roles :
+            pass
+        elif member is not None and member.name not in players:
+            await member.remove_roles(roleTeam1, roleTeam2, reason=None, atomic=True)
+
+
 @client.command()
 async def getMember(self):
-    guild = await(client.fetch_guild(idTeam1))
-    role = discord.utils.get(guild.members, name=tabRole[0])
-    for r in role:
-        await client.get_channel(idChannel).send(r.display_name)
-    #role = discord.utils.get(guild.roles, name=tabRole[1])
+    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+    members = '\n - '.join([member.name for member in guild.members])
+    print(f'Guild Members:\n - {members}')
+
     pass
 
 
-client.run(token)
+client.run(TOKEN)
