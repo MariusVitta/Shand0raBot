@@ -1,32 +1,31 @@
 from config import *
 
-global channel
+load_dotenv()
+
+IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 
 # * AFFICHAGE JEU ------------------------------------------------------------------- #
-async def affichage(numJeu, indiceTab, tabQuestions):
+async def affichage(numJeu, numQuestion):
     """ Méthode d'affichage du texte "Question suivante" ou "Epreuve suivante"
 
         Parameters
         ----------
         :param numJeu : int
             numéro du jeu actuel
-        :param indiceTab : int
-            "***********A FAIRE *****************"
-        :param tabQuestions : Array
-            Tableau contenant l'ensemble des questions, il nous sert juste à avoir sa taille de savoir si on est à l'avant derniere qu
-            question
+        :param numQuestion : int
+            numéro de la question acutelle
 
         Returns
         -------
         :return int nouvelle indice du tableau de question
     """
-    if indiceTab != len(tabQuestions) - 1:
+    if numQuestion != nbQuestions - 1:
         await nextQuestion()
     elif numJeu != (len(tabEpreuves) - 1):
         await nextEpreuve()
-    indiceTab += 1
-    return indiceTab
+    numQuestion += 1
+    return numQuestion
 
 
 def traitementTabReponse(tabReponses: [str]):
@@ -47,22 +46,22 @@ def traitementTabReponse(tabReponses: [str]):
     return reponsesFormat
 
 
-async def printEmbedImage(fichier: str, numJeu: int, indiceTab: int, dossier: str):
+async def printEmbedImage(fichier: str, numJeu: int, numQuestion: int, dossier: str):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
         :param fichier : str
             nom du fichier à faire afficher dans l'embed
-        :param indiceTab : int
-            "***********A FAIRE *****************"
+        :param numQuestion : int
+            numéro de la question acutelle
         :param dossier : str
             nom du dossier contenant `fichier`
         :param numJeu : int
             numéro du jeu actuel
     """
     embed = discord.Embed(
-        title="Question " + str(indiceTab + 1) + " | " + tabEpreuves[numJeu],
+        title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
         description=carreBlanc + "Qui est ce personnage ?",
         color=colorEmbedWhiteDBV
     )
@@ -282,7 +281,7 @@ async def printClue(mot):
     await channel.send(embed=embed)
 
 
-async def printPlayer(tabPlayer:[str]):
+async def printPlayer(tabPlayer: [str]):
     """ Méthode d'affichage de l'ensemble des joueurs
 
         Parameters
@@ -292,7 +291,7 @@ async def printPlayer(tabPlayer:[str]):
 
     """
     global channel
-    channel = client.get_channel(idChannel)
+    channel = client.get_channel(IDCHANNEL)
 
     team1, team2 = "", ""
     for player in tabPlayer[0]:

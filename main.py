@@ -1,6 +1,7 @@
+from re import fullmatch
+
 from games import *
 from logs import *
-from token_2 import *
 
 from dotenv import load_dotenv
 
@@ -85,25 +86,27 @@ async def start(self, message):
         )
         await self.channel.send(embed=embed)
         return
+    # verification que le message est bien "dbf"
+    if message.lower() != messageStart.lower():
+        await self.channel.send(usageBot)
+        return
+
     await removeRoles(self, [])
-    # verification que le message est bien "dvb"
-    if message.lower() == messageStart.lower():
 
-        # await choixNombreJoueurs()
-        embed = discord.Embed(
-            title=titreDBV,
-            description=descriptionDBV,
-            color=colorEmbedWhiteDBV
-        )
-        choix = await channel.send(embed=embed, delete_after=30.0)
-        # ajout des réactions au message du bot
-        for emoji in tabEmoji:
-            await choix.add_reaction(emoji)
+    # await choixNombreJoueurs()
+    embed = discord.Embed(
+        title=titreDBV,
+        description=descriptionDBV,
+        color=colorEmbedWhiteDBV
+    )
+    choix = await channel.send(embed=embed, delete_after=30.0)
+    # ajout des réactions au message du bot
+    for emoji in tabEmoji:
+        await choix.add_reaction(emoji)
 
-        # suppression du message envoyé par l'utilisateur
-        await client.delete_message(self.message)
-    # else:
-    #   await start_error(self, discord.ext.commands.ArgumentParsingError)
+    # suppression du message envoyé par l'utilisateur
+    await client.delete_message(self.message)
+
 
 
 @start.error
@@ -141,7 +144,14 @@ async def checkString(self, *, message):
 
 @client.command()
 async def checkString2(self, *, message):
-    answer = "Eren Jeager"
+    answer = "aa Eren Jeager"
+
+    if fullmatch("eren+", answer.lower()):
+        print("Found!")
+    else:
+        print("Not found!")
+    return
+
     tabCarAnswer = list(answer.lower())
     tabCarUserAnswer = list(message.lower())
     tabLettresRestantesUserAnswer = []
@@ -204,7 +214,8 @@ async def on_raw_reaction_add(payload):
 
     if member.bot:
         return
-
+    if payload.emoji.name != tabRole[0] or payload.emoji.name != tabRole[1]:
+        return
     # Verification sur le salon afin d'eviter de prendre en compte des réactions dans des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = member.guild
@@ -300,7 +311,6 @@ async def attente_joueur(payload):
         async for user in reactionEquipe2.users():
             if not user.bot:
                 tabPlayer[1].append(guild.get_member(user.id).display_name)
-        await removeRoles(payload, tabPlayer)
         partieEnCours = True
         partieEnCours = await lancerJeux(tabPlayer, contexteExecution)
         await removeRoles(payload, tabPlayer)

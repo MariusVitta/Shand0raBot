@@ -2,24 +2,20 @@ from boutons import *
 from affichage import *
 from config import *
 
+load_dotenv()
+
+IDCHANNEL = int(os.getenv('IDCHANNEL'))
+
 
 async def initVar():
-    """
-    global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions, partieEnCours
-    pointsTeam2 = 0
-    pointsTeam1 = 0
-    numeroJeu = 0
-    tabQuestions = questions"""
-
     """ Méthode d'initialisation des variables globales.
 
     """
-    global pointsTeam2, pointsTeam1, numeroJeu, tabQuestions, valTeam1, valTeam2, tabPlayer, channel
+    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle
     pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
-    tabQuestions = questions["One Piece"]
-    random.shuffle(tabQuestions)
     valTeam1, valTeam2 = "", ""
-    channel = client.get_channel(idChannel)
+    channel = client.get_channel(IDCHANNEL)
+    questionActuelle = []
 
 
 async def calculPoints(messageAuthor):
@@ -63,7 +59,8 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
     imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
     result = imgSmall.resize(img.size, Image.NEAREST)
     if not os.path.exists(pathFlou + "/" + dossier):
-        os.makedirs(pathFlou + "/" + dossier, mode=0o777, exist_ok=False)  # création du dossier s'il n'existe pas encore
+        os.makedirs(pathFlou + "/" + dossier, mode=0o777,
+                    exist_ok=False)  # création du dossier s'il n'existe pas encore
     result.save(pathFlou + "/" + dossier + "/" + fichier)
 
     return
@@ -86,10 +83,11 @@ async def jeuImage(numJeu):
         :param numJeu : int
             Numéro du jeu actuel
     """
-    global indiceTab, numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2,channel
+    global indiceTab, numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2, channel
     numeroJeu = numJeu
     indiceTab = 0
     tabBonnesReponse = []
+    imagesVues = []
 
     def traitementNom(nomFichier: str):
         tempName = os.path.splitext(nomFichier)
@@ -99,7 +97,16 @@ async def jeuImage(numJeu):
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
+            1) on va verifier que le nom que l'on cherche est pas dans la chaine => :
+                - Sabo ✅
+                - aSabo ❌ Pas validé car le mot forme aSabo
+                - a Sabo => ✅ Car le bot prend en compte seulement le "Sabo" et pas les caractères qui sont devant et derrière lorsqu'il y a un espace
 
+            2) on va verifier qu'il y a qu'un seul caractère de faux dans la réponse
+                - Lufyf au lieu de Luffy ❌ Pas validé car ne dépasse pas 7 caractères
+                - Sentomaur au lieu de Sentomaru ✅  Validé car dépasse 7 caractères
+
+            3) dans tous les autres cas on retourne False
             Parameters
             ----------
             :param m tuple de plusieurs arguments sur le message
@@ -108,13 +115,63 @@ async def jeuImage(numJeu):
             -------
             :return bool True si la réponse donnée est bonne et si le message a été envoyé dans le bon salon
         """
-        val = True if (m.content.lower() in [rep.lower() for rep in tabBonnesReponse]) else False
-        return val and m.channel == channel
+        if m.channel != channel:
+            return False
 
-    dossier = selectManga()
-    files = os.listdir(path + "/" + dossier)
-    random.shuffle(files)
-    for file in files:
+        # 1)
+        def contains_word(toGuest, userAnswer):
+            return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
+
+        for rep in tabBonnesReponse:
+            if contains_word(rep.lower(), m.content.lower()):
+                return True
+        # 2)
+        if len(m.content) > 7:
+            wrongLettersUser = []
+            goodLettersAnswer = []
+            for rep in tabBonnesReponse:
+
+                tailleUserAnswer = len(rep)
+                tailleAnswer = len(m.content)
+                # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
+                if tailleUserAnswer == tailleAnswer:
+                    tabCarAnswer = list(rep.lower())
+                    tabCarUser = list(m.content.lower())
+
+                    for i in range(tailleUserAnswer):
+                        if tabCarAnswer[i].lower() != tabCarUser[i].lower():
+                            wrongLettersUser.append(tabCarUser[i].lower())
+                            goodLettersAnswer.append(tabCarAnswer[i].lower())
+                    print(wrongLettersUser)
+                    print(goodLettersAnswer)
+                    if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
+                        print("test")
+                        return True
+
+                    elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
+                        print("est")
+                        return False
+
+        else:  # 3
+            return False
+        return
+
+    for numQuestion in range(nbQuestions):
+
+        # récuperation d'un manga différent à chaque tour de jeu
+        dossier = selectManga()
+        files = os.listdir(path + "/" + dossier)
+        random.shuffle(files)
+        file = files[0]
+        if file in imagesVues:
+            while file in imagesVues:
+                dossier = selectManga()
+                files = os.listdir(path + "/" + dossier)
+                random.shuffle(files)
+                file = files[0]
+        imagesVues.append(file)
+
+        # pixelisation de l'image
         traitementImage(file, tabTailleResize[0], dossier)
         await printEmbedImage(file, numJeu, indiceTab, dossier)
 
@@ -130,12 +187,12 @@ async def jeuImage(numJeu):
             except asyncio.TimeoutError:
                 if valeurResize != tabTailleResize[-1]:
                     traitementImage(file, valeurResize, dossier)
-                    await printEmbedImage(file, numJeu, indiceTab, dossier)
+                    await printEmbedImage(file, numJeu, numQuestion, dossier)
                 else:  # on est arrivé au bout du tableau et on affiche la bonne réponse
                     reponse = tabBonnesReponse
                     await printEmbedTimeoutImage(file, reponse, dossier)
 
-                    if indiceTab != len(files) - 1:
+                    if numQuestion != nbQuestions - 1:
                         await nextQuestion()
                     indiceTab += 1
                     break
@@ -148,13 +205,30 @@ async def jeuImage(numJeu):
                 reponse = tabBonnesReponse
                 await printEmbedBonneReponseImage(file, reponse, message, dossier, pointsTeam1, pointsTeam2, valTeam1,
                                                   valTeam2)
-                if indiceTab != len(files) - 1:
+                if numQuestion != nbQuestions - 1:
                     await nextQuestion()
-                indiceTab += 1
                 break
 
     await nextEpreuve()
     return
+
+
+def selectQuestion():
+    """ Methode de selection d'un manga dans la liste des mangas disponibles
+
+    """
+    global tabQuestions
+    mangas = listeMangas
+    random.shuffle(mangas)
+    tabQuestions = questions[mangas[0]]
+    random.shuffle(tabQuestions)
+
+    return tabQuestions[0]
+
+
+def getQuestion():
+    global questionActuelle
+    return questionActuelle
 
 
 async def jeu(numJeu):
@@ -165,12 +239,22 @@ async def jeu(numJeu):
             :param numJeu :
                 Numéro du jeu actuel
     """
-    global contexteExecution, indiceTab, numeroJeu, channel
+    global contexteExecution, numeroJeu, channel, questionActuelle
     numeroJeu = numJeu
-    indiceTab = 0
+    questionsVues = []
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
+            1) on va verifier que le nom que l'on cherche est pas dans la chaine => :
+                - Sabo ✅
+                - aSabo ❌ Pas validé car le mot forme aSabo
+                - a Sabo => ✅ Car le bot prend en compte seulement le "Sabo" et pas les caractères qui sont devant et derrière lorsqu'il y a un espace
+
+            2) on va verifier qu'il y a qu'un seul caractère de faux dans la réponse
+                - Lufyf au lieu de Luffy ❌ Pas validé car ne dépasse pas 7 caractères
+                - Sentomaur au lieu de Sentomaru ✅  Validé car dépasse 7 caractères
+
+            3) dans tous les autres cas on retourne False
 
             Parameters
             ----------
@@ -180,13 +264,71 @@ async def jeu(numJeu):
             -------
             :return bool True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
         """
-        print(tabQuestions[numeroJeu][1])
-        return m.content.lower() in [rep.lower() for rep in tabQuestions[numeroJeu][1]] and m.channel == channel
+        if m.channel != channel:
+            return False
 
-    for questionReponses in tabQuestions:
+        # 0)
 
+        # 1)
+        def contains_word(toGuest, userAnswer):
+            return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
+        ques = getQuestion()
+        print(question)
+        rep = ques[1]
+
+        print("#1" + rep[0])
+        if contains_word(rep[0].lower(), m.content.lower()):
+            return True
+
+        # 2)
+        if len(m.content) > 7:
+            print("#2")
+            wrongLettersUser = []
+            goodLettersAnswer = []
+
+            tailleUserAnswer = len(rep[0])
+            tailleAnswer = len(m.content)
+
+            # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
+            if tailleUserAnswer == tailleAnswer:
+                tabCarAnswer = list(rep[0].lower())
+                tabCarUser = list(m.content.lower())
+
+                for i in range(tailleUserAnswer):
+                    if tabCarAnswer[i].lower() != tabCarUser[i].lower():
+                        wrongLettersUser.append(tabCarUser[i].lower())
+                        goodLettersAnswer.append(tabCarAnswer[i].lower())
+                print(wrongLettersUser)
+                print(goodLettersAnswer)
+                if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
+                    print("test")
+                    return True
+
+                elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
+                    print("est")
+                    return False
+
+        else:  # 3
+            print("#3")
+            return False
+        print("#4")
+        return m.content.lower() == rep[0].lower
+        # [rep.lower() for rep in tabQuestions[numeroJeu][1]]
+
+    for numQuestion in range(nbQuestions):
+
+        # récuperation d'un manga différent à chaque tour de jeu
+        question = selectQuestion()
+        if question in questionsVues:
+            while question in questionsVues:
+                question = selectQuestion()
+
+        questionsVues.append(question)
+        questionActuelle = question
+        print(question)
+        tabQandA = question
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
-        if len(questionReponses[indiceReponses]) > 1:
+        if len(tabQandA[indiceReponses]) > 1:
             embed = discord.Embed(
                 title=questions1[0][0],
                 color=colorEmbedWhiteDBV
@@ -194,11 +336,11 @@ async def jeu(numJeu):
             await contexteExecution.send(embed=embed)
             await asyncio.sleep(delaiDebutPartie)
             await contexteExecution.send(" ‏‏‎ ", view=Quiz(0))
-            await affichage(numeroJeu, indiceTab, tabQuestions)
+            numeroJeu = await affichage(numeroJeu, numQuestion)
             pass
 
         else:
-            await printEmbedQuestions(questionReponses, indiceTab, numJeu)
+            await printEmbedQuestions(tabQandA, numQuestion, numJeu)
             await asyncio.sleep(delaiDebutPartie)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
@@ -209,23 +351,23 @@ async def jeu(numJeu):
                 # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
                 except asyncio.TimeoutError:
                     if nbAffichage == nombreTentatives / 2:  # affichage de la bonne réponse
-                        reponse = questionReponses[indiceReponses][0]
+                        reponse = tabQandA[indiceReponses][0]
                         await printEmbedTimeout(reponse)
-                        indiceTab = await affichage(numeroJeu, indiceTab, tabQuestions)
+                        numeroJeu = await affichage(numeroJeu, numQuestion)
 
                         break
                     else:  # affichage de l'indice
-                        await printClue(questionReponses[indiceReponses][0])
+                        await printClue(tabQandA[indiceReponses][0])
 
                 # sinon on met à jour les points de l'equipe qui a marqué un point,
                 # on affiche l'auteur du bon message dans un
                 # embed et les points des equipes
                 else:
                     await calculPoints(message.author)
-                    reponse = questionReponses[indiceReponses][0]
+                    reponse = tabQandA[indiceReponses][0]
                     await printEmbedBonneReponse(reponse, message, pointsTeam1, pointsTeam2, valTeam1,
                                                  valTeam2)
-                    await affichage(numeroJeu, indiceTab, tabQuestions)
+                    numeroJeu = await affichage(numeroJeu, numQuestion)
                     break
 
     return
@@ -255,8 +397,7 @@ async def lancerJeux(tabJoueur, ctx):
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
 
-    #await jeu(numeroJeu)
-
+    await jeu(0)
     await jeuImage(1)
 
     pass

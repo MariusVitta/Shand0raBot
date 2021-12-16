@@ -7,3 +7,5 @@ from PIL import Image
 import asyncio
 import random
 import typing
+from dotenv import load_dotenv
+from re import search
