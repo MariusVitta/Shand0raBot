@@ -1,3 +1,5 @@
+import discord
+
 from config import *
 
 load_dotenv()
@@ -6,7 +8,7 @@ IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 
 # * AFFICHAGE JEU ------------------------------------------------------------------- #
-async def affichage(numJeu, numQuestion):
+async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str):
     """ Méthode d'affichage du texte "Question suivante" ou "Epreuve suivante"
 
         Parameters
@@ -15,6 +17,8 @@ async def affichage(numJeu, numQuestion):
             numéro du jeu actuel
         :param numQuestion : int
             numéro de la question acutelle
+        :param nomEpreuve : str
+            nom de l'epreuve
 
         Returns
         -------
@@ -23,7 +27,7 @@ async def affichage(numJeu, numQuestion):
     if numQuestion != nbQuestions - 1:
         await nextQuestion()
     elif numJeu != (len(tabEpreuves) - 1):
-        await nextEpreuve()
+        await nextEpreuve(nomEpreuve)
     numQuestion += 1
     return numQuestion
 
@@ -41,7 +45,11 @@ def traitementTabReponse(tabReponses: [str]):
         :return string chaine des réponses
     """
     reponsesFormat = ""
-    for rep in tabReponses:
+    reps = tabReponses.split("/")
+    print(reps)
+    reponsesFormat = ','.join([rep for rep in reps])
+    return reponsesFormat
+    for rep in reps:
         reponsesFormat += rep + (", " if rep != tabReponses[-1] else "")
     return reponsesFormat
 
@@ -91,13 +99,17 @@ async def printEmbedTimeoutImage(fichier: str, reponse: [str], dossier: str):
     await channel.send(file=discord.File(path + "/" + dossier + "/" + fichier), embed=embed)
 
 
-async def printEmbedNextEpreuve():
+async def printEmbedNextEpreuve(nomEpreuve: str):
     """ Methode d'affichage des messages du jeu.
 
+        Parameters
+        ----------
+        :param nomEpreuve: str
+            nom de l'epreuve actuelle
     """
     embed = discord.Embed(
         title="Epreuve suivante",
-        description="▫️ (Nom de l'épreuve)",
+        description="▫️ " + nomEpreuve,
         color=discord.Color.blue()
     )
     await channel.send(embed=embed)
@@ -118,10 +130,10 @@ async def printEmbedDebutPartie():
     """ Methode d'affichage des messages du jeu.
 
     """
-
     embed = discord.Embed(
-        title="La partie va démarrer",
-        color=colorEmbedWhiteDBV
+        title="Première épreuve",
+        description=carreBlanc + nomEpreuve1,
+        color=discord.Color.blue()
     )
     await channel.send(embed=embed)
 
@@ -182,10 +194,8 @@ async def printEmbedBonneReponse(answer: [str], messageSender: any, pointsTeam1:
         :param valTeam2 : str
             string pour gerer l'affichage
     """
-    if isinstance(answer, list):
-        reponses = traitementTabReponse(answer)
-    else:
-        reponses = answer
+
+    reponses = traitementTabReponse(answer)
     embed = discord.Embed(
         title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
         description=reponseText + "`" + reponses + "`\n\n" +
@@ -206,10 +216,7 @@ async def printEmbedTimeout(answer: [str]):
         :param answer : [str]
             tableau des réponses
     """
-    if isinstance(answer, list):
-        reponses = traitementTabReponse(answer)
-    else:
-        reponses = answer
+    reponses = traitementTabReponse(answer)
     embed = discord.Embed(
         title=timeout,
         description=reponseText + "`" + reponses + "`",
@@ -218,12 +225,12 @@ async def printEmbedTimeout(answer: [str]):
     await channel.send(embed=embed)
 
 
-async def printEmbedQuestions(questionReponses, numQuestion: int, numJeu: int):
+async def printEmbedQuestions(question: [str], numQuestion: int, numJeu: int):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
-        :param questionReponses : [str]
+        :param question : [str]
             tableau des questions
         :param numQuestion : int
             numéro de la question actuelle
@@ -232,7 +239,7 @@ async def printEmbedQuestions(questionReponses, numQuestion: int, numJeu: int):
     """
     embed = discord.Embed(
         title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
-        description=carreBlanc + questionReponses[indiceQuestion],
+        description=carreBlanc + question,
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
@@ -247,12 +254,12 @@ async def nextQuestion():
     await asyncio.sleep(delaiDebutPartie)
 
 
-async def nextEpreuve():
+async def nextEpreuve(nomEpreuve: str):
     """ Methode d'attente entre 2 épreuves.
 
     """
     await asyncio.sleep(delaiEntreEpreuves)
-    await printEmbedNextEpreuve()
+    await printEmbedNextEpreuve(nomEpreuve)
     await asyncio.sleep(delaiDebutPartie)
 
 
@@ -264,13 +271,17 @@ async def printClue(mot):
         :param mot : string
             mot dont on va faire afficher 2 lettres en tant qu'indice
     """
+    mots = mot.split("/")
+    indice = mots[0]
     car1, car2 = 1, 1
-    listMot = list(mot)
+    listMot = list(indice)
     while car1 == car2:  # on evite de choisir 2 fois la meme lettres à faire afficher en indice
         car1 = random.randrange(0, len(listMot))
         car2 = random.randrange(0, len(listMot))
     for i in range(len(listMot)):  # on tranforme tout sauf les 2 lettres selectionnés en underscore
-        if i != car1 and i != car2:
+        if listMot[i].isspace():
+            listMot[i] = "\t"
+        elif i != car1 and i != car2:
             listMot[i] = "\_"
     indice = "".join(listMot)
 

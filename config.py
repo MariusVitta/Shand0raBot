@@ -68,8 +68,17 @@ questions = {"One Piece": [["Quel pirate de l'équipage de Shanks s'est occupé 
              }
 indiceQuestion = 0
 indiceReponses = 1
+indiceTypeQuestion = 2
+indiceBonneReponse = 3
+choixSimple = 1
+choixMultiple = 2
 
-listeMangas = ["One Piece", "Death Note"]
+listeMangas = ["One Piece", "Death Note", "Hunter x Hunter", "My Hero Academia"]
+listesQuestions = ["One Piece", "Death Note"]
+
+nomEpreuve1 = "Quiz"
+nomEpreuve2 = "Qui est-ce ?"
+nomEpreuve3 = "nom épreuve 3"
 
 # ------------------------------------------------------------------------------------------------------------#
 # GESTIONS DES REPONSES
@@ -94,7 +103,7 @@ delaiEntreEpreuves = 5
 delaiEntreQuestions = 5
 delaiJoinMessage = 30
 delaiQuestions = 20
-delaiQuestionsImages = 28
+delaiQuestionsImages = 40
 delaiDebutPartie = 3
 delaiReponse = 5
 

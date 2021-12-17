@@ -1,5 +1,6 @@
-from imports import *
+import discord.ui
 
+from imports import *
 
 questions1 = [["Quel est le plus beau fruit du démon ?",
                ["Suna Suna no Mi", "Gomu Gomu no Mi", "Il lui retient son bras", "Ope Ope no Mi"],
@@ -9,31 +10,54 @@ questions1 = [["Quel est le plus beau fruit du démon ?",
 
 
 class QuizButton(discord.ui.Button):
-    def __init__(self, reponse, numero, row):
-        self.reponse = reponse
-        self.numero = numero
+
+    def __init__(self, tabReponses, rep, bonneReponse, row):
+        self.tabReponses = tabReponses
+        self.bonneReponse = bonneReponse
+        self.rep = rep
         self.row = row
-        super().__init__(style=discord.ButtonStyle.blurple, label=reponse, row=row)
+
+        super().__init__(style=discord.ButtonStyle.blurple, label=rep, row=row)
 
     async def callback(self, interaction: Interaction):
         assert self.view is not None
         view: Quiz = self.view
 
-        if questions1[self.numero][2] == self.reponse:  # Ici c'est la condition où c la bonne réponse
-            await interaction.response.send_message("Bonne réponse ! :D")
-            view.stop()
+        if self.rep == self.bonneReponse:
+            await interaction.response.send_message("Bonne reponse")
+            self.disabled = True
+            for i in view.children:
+                view.remove_item(i)
+                # view.clear_items()
         else:
-            await interaction.response.send_message("Mauvaise réponse ! :/")
+            await view.stop1()
+            await interaction.response.send_message("Mauvaise reponse\nLa bonne réponse était: " + self.bonneReponse)
 
-        # view.stop()  # ça ça arrête la view donc c pas ce que yung voulait faire, je te laisse chercher
+
 
 
 class Quiz(discord.ui.View):
     children: typing.List[QuizButton]
 
-    def __init__(self, numero):
-        self.numero = numero
-        super().__init__()
+    def __init__(self, tabReponses, bonneReponse):
+        self.tabReponses = tabReponses
+        self.bonneReponse = bonneReponse
+        super().__init__(timeout=20)
+        for i in range(len(tabReponses)):
+            self.add_item(QuizButton(tabReponses, tabReponses[i], bonneReponse, i))
 
-        for i in range(len(questions1[numero][1])):
-            self.add_item(QuizButton(questions1[numero][1][i], numero, i))
+    async def on_timeout(self):
+        self.stop()
+
+        print("timeout")
+        return
+        # await self.send("Timeout masta")
+
+    async def stop1(self):
+        for i in self.children:
+            print(i)
+            i.disabled = True
+            self.remove_item(i)
+
+    async def on_error(self, error: Exception, item: Item, interaction: Interaction):
+        await interaction.response.send_message(str(error))

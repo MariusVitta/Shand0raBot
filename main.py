@@ -182,6 +182,20 @@ async def display(ctx):
     print(type(ctx.author))
     await ctx.channel.send(ctx.author.display_name)
 
+@client.command()
+async def afficherFile(ctx):
+    import random
+    with open('One Piece.txt', 'r') as source:
+        data = [line for line in source]
+    random.shuffle(data)
+    print(data)
+    return
+    f = open("One Piece.txt", "r")
+    #await ctx.channel.send(f)
+    #return
+    for line in f:
+        lineSplit = line.split(";")
+        await ctx.channel.send("question: " + lineSplit[0] + "\n réponses: " + lineSplit[1])
 
 @client.command()
 async def restart(self):
@@ -210,12 +224,12 @@ async def on_raw_reaction_add(payload):
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
     """
+    global partieEnCours
     member = payload.member
 
     if member.bot:
         return
-    #if payload.emoji.name != tabRole[0] or payload.emoji.name != tabRole[1]:
-     #   return
+
     # Verification sur le salon afin d'eviter de prendre en compte des réactions dans des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = member.guild
@@ -264,6 +278,9 @@ async def on_raw_reaction_remove(payload):
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
     """
+    global partieEnCours
+    if not partieEnCours:
+        return
     # Verification sur le salon afin d'eviter les traitements sur des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = await(client.fetch_guild(payload.guild_id))
@@ -311,8 +328,11 @@ async def attente_joueur(payload):
         async for user in reactionEquipe2.users():
             if not user.bot:
                 tabPlayer[1].append(guild.get_member(user.id).display_name)
-        partieEnCours = True
-        partieEnCours = await lancerJeux(tabPlayer, contexteExecution)
+        await reactionEquipe1.clear()
+        await reactionEquipe2.clear()
+        if not partieEnCours:
+            partieEnCours = True
+            partieEnCours = await lancerJeux(tabPlayer, contexteExecution)
         await removeRoles(payload, tabPlayer)
 
 

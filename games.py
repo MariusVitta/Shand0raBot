@@ -11,11 +11,12 @@ async def initVar():
     """ Méthode d'initialisation des variables globales.
 
     """
-    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle
+    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle,reponsesActuelles
     pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
     valTeam1, valTeam2 = "", ""
     channel = client.get_channel(IDCHANNEL)
     questionActuelle = []
+    reponsesActuelles = []
 
 
 async def calculPoints(messageAuthor):
@@ -71,6 +72,8 @@ def selectManga():
 
     """
     mangas = listeMangas
+    # Random number with system time
+    random.seed(datetime.now())
     random.shuffle(mangas)
     return mangas[0]
 
@@ -158,12 +161,16 @@ async def jeuImage(numJeu):
         # récuperation d'un manga différent à chaque tour de jeu
         dossier = selectManga()
         files = os.listdir(path + "/" + dossier)
+        # Random number with system time
+        random.seed(datetime.now())
         random.shuffle(files)
         file = files[0]
         if file in imagesVues:
             while file in imagesVues:
                 dossier = selectManga()
                 files = os.listdir(path + "/" + dossier)
+                # Random number with system time
+                random.seed(datetime.now())
                 random.shuffle(files)
                 file = files[0]
         imagesVues.append(file)
@@ -206,7 +213,7 @@ async def jeuImage(numJeu):
                     await nextQuestion()
                 break
 
-    await nextEpreuve()
+    await nextEpreuve(nomEpreuve3)
     return
 
 
@@ -214,18 +221,30 @@ def selectQuestion():
     """ Methode de selection d'un manga dans la liste des mangas disponibles
 
     """
-    global tabQuestions
-    mangas = listeMangas
-    random.shuffle(mangas)
-    tabQuestions = questions[mangas[0]]
-    random.shuffle(tabQuestions)
+    """global tabQuestions
+       mangas = listesQuestions
+       random.seed(datetime.now())
+       random.shuffle(mangas)
+       tabQuestions = questions[mangas[0]]
+       # Random number with system time
+       random.seed(datetime.now())"
+       random.shuffle(tabQuestions)
 
-    return tabQuestions[0]
+       return tabQuestions[0]"""
+
+    with open('One Piece.txt', 'r') as source:
+        data = [line for line in source]
+    random.shuffle(data)
+    return data[0].split(";")
 
 
 def getQuestion():
     global questionActuelle
     return questionActuelle
+
+def getReponses():
+    global reponsesActuelles
+    return reponsesActuelles
 
 
 async def jeu(numJeu):
@@ -236,7 +255,7 @@ async def jeu(numJeu):
             :param numJeu :
                 Numéro du jeu actuel
     """
-    global contexteExecution, numeroJeu, channel, questionActuelle
+    global contexteExecution, numeroJeu, channel, questionActuelle,reponsesActuelles
     numeroJeu = numJeu
     questionsVues = []
 
@@ -269,10 +288,12 @@ async def jeu(numJeu):
         # 1)
         def contains_word(toGuest, userAnswer):
             return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
-        ques = getQuestion()
-        rep = ques[1]
-        if contains_word(rep[0].lower(), m.content.lower()):
-            return True
+
+        reponses = getReponses()
+        tableauReps = reponses.split("/")
+        for rep in tableauReps:
+            if contains_word(rep.lower(), m.content.lower()):
+                return True
 
         # 2)
         if len(m.content) > 7:
@@ -280,56 +301,65 @@ async def jeu(numJeu):
             wrongLettersUser = []
             goodLettersAnswer = []
 
-            tailleUserAnswer = len(rep[0])
-            tailleAnswer = len(m.content)
+            for rep in tableauReps:
 
-            # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
-            if tailleUserAnswer == tailleAnswer:
-                tabCarAnswer = list(rep[0].lower())
-                tabCarUser = list(m.content.lower())
+                tailleUserAnswer = len(rep)
+                tailleAnswer = len(m.content)
 
-                for i in range(tailleUserAnswer):
-                    if tabCarAnswer[i].lower() != tabCarUser[i].lower():
-                        wrongLettersUser.append(tabCarUser[i].lower())
-                        goodLettersAnswer.append(tabCarAnswer[i].lower())
-                if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
-                    return True
+                # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
+                if tailleUserAnswer == tailleAnswer:
+                    tabCarAnswer = list(rep.lower())
+                    tabCarUser = list(m.content.lower())
 
-                elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
-                    return False
+                    for i in range(tailleUserAnswer):
+                        if tabCarAnswer[i].lower() != tabCarUser[i].lower():
+                            wrongLettersUser.append(tabCarUser[i].lower())
+                            goodLettersAnswer.append(tabCarAnswer[i].lower())
+                    if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
+                        return True
+
+                    elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
+                        return False
 
         else:  # 3
             print("#3")
             return False
         print("#4")
-        return m.content.lower() == rep[0].lower
-        # [rep.lower() for rep in tabQuestions[numeroJeu][1]]
+
+        return m.content.lower() in [y.lower() for y in tableauReps]
+        # m.content.lower() == rep.lower
 
     for numQuestion in range(nbQuestions):
 
         # récuperation d'un manga différent à chaque tour de jeu
-        question = selectQuestion()
+        data = selectQuestion()
+        question = data[indiceQuestion]
+        tabRep = data[indiceReponses]
+        typeQuestion = data[indiceTypeQuestion]
         if question in questionsVues:
             while question in questionsVues:
-                question = selectQuestion()
+                data = selectQuestion()
+                question = data[indiceQuestion]
 
-        questionsVues.append(question)
-        questionActuelle = question
-        tabQandA = question
+        questionsVues.append(str(question))
+        questionActuelle = str(question)
+        reponsesActuelles = tabRep
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
-        if len(tabQandA[indiceReponses]) > 1:
+        #
+        if int(typeQuestion) == choixMultiple:
             embed = discord.Embed(
                 title=questions1[0][0],
                 color=colorEmbedWhiteDBV
             )
             await contexteExecution.send(embed=embed)
             await asyncio.sleep(delaiDebutPartie)
-            await contexteExecution.send(" ‏‏‎ ", view=Quiz(0))
-            numeroJeu = await affichage(numeroJeu, numQuestion)
+            await contexteExecution.send(" ‏‏‎ ", view=Quiz(["Luffy", "Law", "Jinbe", "Boa"], "Luffy" ))
+            await client.wait_for("button_click")
+            numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
             pass
 
         else:
-            await printEmbedQuestions(tabQandA, numQuestion, numJeu)
+            await printEmbedQuestions(questionActuelle, numQuestion, numJeu)
             await asyncio.sleep(delaiDebutPartie)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
@@ -340,23 +370,23 @@ async def jeu(numJeu):
                 # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
                 except asyncio.TimeoutError:
                     if nbAffichage == nombreTentatives / 2:  # affichage de la bonne réponse
-                        reponse = tabQandA[indiceReponses][0]
+                        reponse = tabRep
                         await printEmbedTimeout(reponse)
-                        numeroJeu = await affichage(numeroJeu, numQuestion)
+                        numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
 
                         break
                     else:  # affichage de l'indice
-                        await printClue(tabQandA[indiceReponses][0])
+                        await printClue(tabRep)
 
                 # sinon on met à jour les points de l'equipe qui a marqué un point,
                 # on affiche l'auteur du bon message dans un
                 # embed et les points des equipes
                 else:
                     await calculPoints(message.author)
-                    reponse = tabQandA[indiceReponses][0]
+                    reponse = tabRep
                     await printEmbedBonneReponse(reponse, message, pointsTeam1, pointsTeam2, valTeam1,
                                                  valTeam2)
-                    numeroJeu = await affichage(numeroJeu, numQuestion)
+                    numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
                     break
 
     return
