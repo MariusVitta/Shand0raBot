@@ -232,7 +232,7 @@ def selectQuestion():
 
        return tabQuestions[0]"""
 
-    with open('One Piece.txt', 'r') as source:
+    with open('One Piece.txt', 'r', encoding="utf-8") as source:
         data = [line for line in source]
     random.shuffle(data)
     return data[0].split(";")
@@ -341,8 +341,8 @@ async def jeu(numJeu):
                 data = selectQuestion()
                 question = data[indiceQuestion]
 
-        questionsVues.append(str(question))
-        questionActuelle = str(question)
+        questionsVues.append(question)
+        questionActuelle = question
         reponsesActuelles = tabRep
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         #
