@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-"""TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
-IDCHANNEL = int(os.getenv('IDCHANNEL'))"""
+IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
 global partieEnCours
@@ -86,13 +86,15 @@ async def start(self, message):
         )
         await self.channel.send(embed=embed)
         return
+    print("et1")
     # verification que le message est bien "dbf"
     if message.lower() != messageStart.lower():
+        print("e2t")
         await self.channel.send(usageBot)
         return
 
     await removeRoles(self, [])
-
+    print("e3t")
     # await choixNombreJoueurs()
     embed = discord.Embed(
         title=titreDBV,
