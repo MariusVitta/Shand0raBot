@@ -456,7 +456,7 @@ async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator):
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
 
-    #await jeu(0, tabPlayerDiscriminator)
+    await jeu(0, tabPlayerDiscriminator)
     await jeuImage(1, tabPlayerDiscriminator)
     pass
     await printWinners(pointsTeam1, pointsTeam2)
