@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
+GUILD = str(os.getenv('DISCORD_GUILD'))
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
