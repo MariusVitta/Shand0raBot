@@ -221,17 +221,6 @@ def selectQuestion():
     """ Methode de selection d'un manga dans la liste des mangas disponibles
 
     """
-    """global tabQuestions
-       mangas = listesQuestions
-       random.seed(datetime.now())
-       random.shuffle(mangas)
-       tabQuestions = questions[mangas[0]]
-       # Random number with system time
-       random.seed(datetime.now())"
-       random.shuffle(tabQuestions)
-
-       return tabQuestions[0]"""
-
     with open('One Piece.txt', 'r', encoding="utf-8") as source:
         data = [line for line in source]
     random.shuffle(data)
@@ -392,6 +381,19 @@ async def jeu(numJeu):
     return
 
 
+def sauvegardeScore(tabPlayer):
+    """ Methode de sauvegarde du score des joueurs.
+
+           Parameters
+           ----------
+           :param tabPlayer : Array
+               tableau de string contenant le nom de l'ensemble des joueurs
+
+    """
+
+    pass
+
+
 async def lancerJeux(tabJoueur, ctx):
     """ Methode de lancement du jeu.
         Initialise les variables et lance l'ensemble des jeux
@@ -418,16 +420,9 @@ async def lancerJeux(tabJoueur, ctx):
 
     await jeu(0)
     await jeuImage(1)
-
     pass
-
-    """for numeroJeu in range(3):
-        # JEU 1
-        await jeu(numeroJeu)
-
-        # on patiente 3 secondes après l'affichage des scores
-        await asyncio.sleep(3)"""
     await printWinners(pointsTeam1, pointsTeam2)
+    await sauvegardeScore(tabPlayer)
     pointsTeam2 = 0
     pointsTeam1 = 0
 

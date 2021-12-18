@@ -108,7 +108,6 @@ async def start(self, message):
     await client.delete_message(self.message)
 
 
-
 @start.error
 async def start_error(ctx, error):
     """ Gestion d'erreur sur la commande start
@@ -182,6 +181,7 @@ async def display(ctx):
     print(type(ctx.author))
     await ctx.channel.send(ctx.author.display_name)
 
+
 @client.command()
 async def afficherFile(ctx):
     import random
@@ -191,11 +191,12 @@ async def afficherFile(ctx):
     print(data)
     return
     f = open("One Piece.txt", "r")
-    #await ctx.channel.send(f)
-    #return
+    # await ctx.channel.send(f)
+    # return
     for line in f:
         lineSplit = line.split(";")
         await ctx.channel.send("question: " + lineSplit[0] + "\n réponses: " + lineSplit[1])
+
 
 @client.command()
 async def restart(self):
@@ -309,9 +310,8 @@ async def attente_joueur(payload):
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
     """
-    global partieEnCours, tabPlayer
+    global partieEnCours, tabPlayer, stopCount
     tabPlayer = [[], []]
-
     channel = client.get_channel(IDCHANNEL)
     message = await channel.fetch_message(payload.message_id)
     reactionEquipe1 = get(message.reactions, emoji=tabEmoji[indiceEquipe1])
@@ -319,13 +319,13 @@ async def attente_joueur(payload):
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= nombreJoueursEquipe1 and reactionEquipe2.count == nombreJoueursEquipe2):
+            reactionEquipe1.count >= nombreJoueursEquipe1 and reactionEquipe2.count >= nombreJoueursEquipe2):
 
         # récuperation de l'ensemble des joueurs
-        async for user in reactionEquipe1.users():
+        async for user in reactionEquipe1.users(limit=nombreJoueursEquipe1):
             if not user.bot:
                 tabPlayer[0].append(guild.get_member(user.id).display_name)
-        async for user in reactionEquipe2.users():
+        async for user in reactionEquipe2.users(limit=nombreJoueursEquipe2):
             if not user.bot:
                 tabPlayer[1].append(guild.get_member(user.id).display_name)
         await reactionEquipe1.clear()
@@ -394,6 +394,15 @@ async def stop(ctx):
 
 
 async def removeRoles(ctx, players: [str]):
+    """ Methode de retrait des rôles de jeux des joueurs.
+
+         Parameters
+         ----------
+         :param ctx : Context
+             Context d'execution
+        :param players : [str]
+            tableau contenant des noms des joueurs
+    """
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
     roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
@@ -401,19 +410,11 @@ async def removeRoles(ctx, players: [str]):
     for member in guild.members:
         if member.bot:
             pass
-        elif roleTeam1 not in member.roles and roleTeam2 not in member.roles :
+        elif roleTeam1 not in member.roles and roleTeam2 not in member.roles:
             pass
         elif member is not None and member.name not in players:
             await member.remove_roles(roleTeam1, roleTeam2, reason=None, atomic=True)
 
-
-@client.command()
-async def getMember(self):
-    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
-    members = '\n - '.join([member.name for member in guild.members])
-    print(f'Guild Members:\n - {members}')
-
-    pass
 
 
 client.run(TOKEN)
