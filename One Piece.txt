@@ -32,8 +32,8 @@
 32:Parmi l'équipage de Kaido comment s'appelle la section qui ont mangé un smile défectueux ( rire );Pleasures/Waiters/Gifters/Laughters;2
 33:Qui se fait ejecter le premier par Kuma à Saobondy;Zoro;1
 34:En quel animal se transforme Dalton;Bison;1
-35:Clover a été abattu avant de dévoiler :;Le nom de l'ancien royaume;1
-36:A quelle flotte de Barbe Blanche appartenait Teach;2ème: Ace;1
+35:Clover a été abattu avant de dévoiler;Le nom de l'ancien royaume;1
+36:A quelle flotte de Barbe Blanche appartenait Teach;2ème Ace;1
 37:De quelle denrée alimentaire Charlotte Katakuri est-il le ministre ?;ACOMPLETER;1
 38:Qui est le seul pirate connu à avoir été relâché d’Impel Down ?;ACOMPLETER;1
 39:Selon McKinley l'entrée illégale à Skypiea correspond à quelle catégorie de crime;11ème;1

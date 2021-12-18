@@ -178,8 +178,7 @@ async def checkString2(self, *, message):
 
 @client.command()
 async def display(ctx):
-    print(type(ctx.author))
-    await ctx.channel.send(ctx.author.display_name)
+    await ctx.channel.send(ctx.author.name +"#"+ ctx.author.discriminator)
 
 
 @client.command()
@@ -310,8 +309,9 @@ async def attente_joueur(payload):
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
     """
-    global partieEnCours, tabPlayer, stopCount
+    global partieEnCours, stopCount
     tabPlayer = [[], []]
+    tabPlayerDiscriminator = []
     channel = client.get_channel(IDCHANNEL)
     message = await channel.fetch_message(payload.message_id)
     reactionEquipe1 = get(message.reactions, emoji=tabEmoji[indiceEquipe1])
@@ -325,14 +325,16 @@ async def attente_joueur(payload):
         async for user in reactionEquipe1.users(limit=nombreJoueursEquipe1):
             if not user.bot:
                 tabPlayer[0].append(guild.get_member(user.id).display_name)
+                tabPlayerDiscriminator.append([guild.get_member(user.id).name + "#" + guild.get_member(user.id).discriminator,0])
         async for user in reactionEquipe2.users(limit=nombreJoueursEquipe2):
             if not user.bot:
                 tabPlayer[1].append(guild.get_member(user.id).display_name)
+                tabPlayerDiscriminator.append([guild.get_member(user.id).name + "#" + guild.get_member(user.id).discriminator, 0])
         await reactionEquipe1.clear()
         await reactionEquipe2.clear()
         if not partieEnCours:
             partieEnCours = True
-            partieEnCours = await lancerJeux(tabPlayer, contexteExecution)
+            partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator)
         await removeRoles(payload, tabPlayer)
 
 
@@ -415,6 +417,20 @@ async def removeRoles(ctx, players: [str]):
         elif member is not None and member.name not in players:
             await member.remove_roles(roleTeam1, roleTeam2, reason=None, atomic=True)
 
+@client.command()
+async def test():
+    """ Methode de sauvegarde du score des joueurs.
 
+       Parameters
+       ----------
+       :param tabPlayer : Array
+           tableau de string contenant le nom de l'ensemble des joueurs
+
+    """
+    tab = [("Yung", 15), ("Marius", 12), ("Said", 10)]
+    with open('scores.txt', 'r', encoding="utf-8") as source:
+        data = [(line[0], line[1]) for line in source]
+
+    pass
 
 client.run(TOKEN)

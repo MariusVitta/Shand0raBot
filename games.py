@@ -11,7 +11,7 @@ async def initVar():
     """ Méthode d'initialisation des variables globales.
 
     """
-    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle,reponsesActuelles
+    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle, reponsesActuelles
     pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
     valTeam1, valTeam2 = "", ""
     channel = client.get_channel(IDCHANNEL)
@@ -19,16 +19,18 @@ async def initVar():
     reponsesActuelles = []
 
 
-async def calculPoints(messageAuthor):
+async def calculPoints(messageAuthor, tabJoueurDiscriminator: [str]):
     """ Méthode de mise à jour du score actuel.
 
         Parameters
         ----------
-        messageAuthor : Any
+        :param messageAuthor : Any
             un tuple de plusieurs arguments sur l'auteur du message
-
+        :param tabJoueurDiscriminator : [str]
+            tableau des joueurs avec leurs discriminants
     """
-    global pointsTeam2, pointsTeam1, valTeam1, valTeam2, indiceTab
+    global pointsTeam2, pointsTeam1, valTeam1, valTeam2, indiceTab, tabPlayerDiscriminator
+    tabPlayerDiscriminator = tabJoueurDiscriminator
     if tabRole[indiceEquipe1].lower() in [y.name.lower() for y in messageAuthor.roles]:
         pointsTeam1 += 1
         valTeam1 = " :```diff\n+ "
@@ -37,7 +39,11 @@ async def calculPoints(messageAuthor):
         pointsTeam2 += 1
         valTeam1 = " :``` "
         valTeam2 = " :```diff\n+ "
-
+    joueurDiscriminator = messageAuthor.name + "#" + messageAuthor.discriminator
+    for joueur in tabPlayerDiscriminator:
+        # si le joueur avait déjà un score auparavant, on va mettre à jour son score simplement
+        if joueur[0] == joueurDiscriminator:
+            joueur[1] += 1
     return
 
 
@@ -78,7 +84,7 @@ def selectManga():
     return mangas[0]
 
 
-async def jeuImage(numJeu):
+async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
     """ Méthode principale du jeu version image.
 
         Parameters
@@ -205,7 +211,7 @@ async def jeuImage(numJeu):
             # on affiche l'auteur du bon message dans un
             # embed et les points des equipes
             else:
-                await calculPoints(message.author)
+                await calculPoints(message.author, tabPlayerDiscriminator)
                 reponse = tabBonnesReponse
                 await printEmbedBonneReponseImage(file, reponse, message, dossier, pointsTeam1, pointsTeam2, valTeam1,
                                                   valTeam2)
@@ -224,29 +230,34 @@ def selectQuestion():
     with open('One Piece.txt', 'r', encoding="utf-8") as source:
         data = [line for line in source]
     random.shuffle(data)
-    return data[0].split(";")
+    s = data[0].split(":")
+    return s[1].split(";")
 
 
 def getQuestion():
     global questionActuelle
     return questionActuelle
 
+
 def getReponses():
     global reponsesActuelles
     return reponsesActuelles
 
 
-async def jeu(numJeu):
+async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
     """ Méthode principale du jeu version quiz.
 
         Parameters
         ----------
-            :param numJeu :
-                Numéro du jeu actuel
+        :param numJeu : int
+            Numéro du jeu actuel
+        :param tabJoueurDiscriminator : [str]
+            tableau des joueurs avec leurs discriminants
     """
-    global contexteExecution, numeroJeu, channel, questionActuelle,reponsesActuelles
+    global contexteExecution, numeroJeu, channel, questionActuelle, reponsesActuelles, tabPlayerDiscriminator
     numeroJeu = numJeu
     questionsVues = []
+    tabPlayerDiscriminator = tabJoueurDiscriminator
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
@@ -318,7 +329,7 @@ async def jeu(numJeu):
         return m.content.lower() in [y.lower() for y in tableauReps]
         # m.content.lower() == rep.lower
 
-    for numQuestion in range(nbQuestions):
+    for numQuestion in range(nbQuestions * 2):
 
         # récuperation d'un manga différent à chaque tour de jeu
         data = selectQuestion()
@@ -342,7 +353,7 @@ async def jeu(numJeu):
             )
             await contexteExecution.send(embed=embed)
             await asyncio.sleep(delaiDebutPartie)
-            await contexteExecution.send(" ‏‏‎ ", view=Quiz(["Luffy", "Law", "Jinbe", "Boa"], "Luffy" ))
+            await contexteExecution.send(" ‏‏‎ ", view=Quiz(["Luffy", "Law", "Jinbe", "Boa"], "Luffy"))
             await client.wait_for("button_click")
             numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
             pass
@@ -371,7 +382,7 @@ async def jeu(numJeu):
                 # on affiche l'auteur du bon message dans un
                 # embed et les points des equipes
                 else:
-                    await calculPoints(message.author)
+                    await calculPoints(message.author, tabPlayerDiscriminator)
                     reponse = tabRep
                     await printEmbedBonneReponse(reponse, message, pointsTeam1, pointsTeam2, valTeam1,
                                                  valTeam2)
@@ -381,48 +392,75 @@ async def jeu(numJeu):
     return
 
 
-def sauvegardeScore(tabPlayer):
+def sauvegardeScore(tabPlayerDiscriminator):
     """ Methode de sauvegarde du score des joueurs.
 
            Parameters
            ----------
-           :param tabPlayer : Array
-               tableau de string contenant le nom de l'ensemble des joueurs
+           :param tabPlayerDiscriminator : [array)
+               tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
 
     """
+    # tab = [("Yung", 7), ("Marius", 7), ("Said", 4), ("AzoSituations", 6)]
+    data = []
+    # récuperation de l'ensemble des scores actuels
+    with open('scores.txt', 'r', encoding="utf-8") as source:
+        for line in source:
+            if line != "\n":
+                line = line.rstrip("\n")
+                line = line.split("/")
+                data.append([line[0], int(line[1])])
+
+    # joueurDiscriminator = messageAuthor.name + "#" + messageAuthor.discriminator
+    # on parcourt le tableau des resultats pour modifier le score des joueurs déjà existant
+    for joueur in tabPlayerDiscriminator:
+        # si le joueur avait déjà un score auparavant, on va mettre à jour son score simplement
+        if joueur[0] in [j[0] for j in data]:
+            for i in range(len(data)):
+                if data[i][0] == joueur[0]:
+                    data[i][1] += joueur[1]
+        else:
+            data.append([joueur[0], joueur[1]])
+    print(data)
+    # sauvegarde de tous les scores après les avoir mis à jour
+    with open('scores.txt', 'w') as target:
+        for i in range(len(data)):
+            target.write(data[i][0] + "/" + str(data[i][1]) + "\n")
 
     pass
 
 
-async def lancerJeux(tabJoueur, ctx):
+async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator):
     """ Methode de lancement du jeu.
         Initialise les variables et lance l'ensemble des jeux
 
         Parameters
         ----------
-        :param tabJoueur : Array
+        :param tabJoueur : [str]
             tableau de string contenant le nom de l'ensemble des joueurs
         :param ctx : Context
             contexte d'execution, nous sert principalement afin d'afficher les messages avec des boutons
-
+        :param tabPlayerDiscriminator : [str]
+            tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
         Returns
         ------
         :return bool fin de partie
     """
-    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution, channel
+    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution, channel, tabPlayerDiscriminator
     await initVar()
     tabPlayer = tabJoueur
     contexteExecution = ctx
+    tabPlayerDiscriminator = tabJoueurDiscriminator
     await printPlayer(tabPlayer)
     await asyncio.sleep(delaiDebutPartie)
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
 
-    await jeu(0)
-    await jeuImage(1)
+    #await jeu(0, tabPlayerDiscriminator)
+    await jeuImage(1, tabPlayerDiscriminator)
     pass
     await printWinners(pointsTeam1, pointsTeam2)
-    await sauvegardeScore(tabPlayer)
+    sauvegardeScore(tabPlayerDiscriminator)
     pointsTeam2 = 0
     pointsTeam1 = 0
 

@@ -24,7 +24,7 @@ async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str):
         -------
         :return int nouvelle indice du tableau de question
     """
-    if numQuestion != nbQuestions - 1:
+    if numQuestion != (nbQuestions *2) - 1:
         await nextQuestion()
     elif numJeu != (len(tabEpreuves) - 1):
         await nextEpreuve(nomEpreuve)
@@ -45,6 +45,7 @@ def traitementTabReponse(tabReponses: [str]):
         :return string chaine des réponses
     """
     reponsesFormat = ""
+    print(tabReponses)
     reps = tabReponses.split("/")
     print(reps)
     reponsesFormat = ','.join([rep for rep in reps])
@@ -89,7 +90,7 @@ async def printEmbedTimeoutImage(fichier: str, reponse: [str], dossier: str):
         :param dossier : str
             nom du dossier contenant `fichier`
     """
-    reponses = traitementTabReponse(reponse)
+    reponses = ','.join([rep for rep in reponse])
     embed = discord.Embed(
         title=timeout,
         description=reponseText + "`" + reponses + "`",
@@ -161,7 +162,7 @@ async def printEmbedBonneReponseImage(fichier: str, reponse: [str], messageSende
         :param valTeam2 : str
             string pour gerer l'affichage
     """
-    reponses = traitementTabReponse(reponse)
+    reponses = ','.join([rep for rep in reponse])
     embed = discord.Embed(
         title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
         description=reponseText + "`" + reponses + "`\n\n" +
@@ -237,9 +238,11 @@ async def printEmbedQuestions(question: [str], numQuestion: int, numJeu: int):
         :param numJeu :int
             numéro du jeu actuel
     """
+    """"Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu] + "\n\n" + carreBlanc + question"""
     embed = discord.Embed(
+
         title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
-        description=carreBlanc + question,
+        description=carreBlanc + "**" + question + "**",
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
