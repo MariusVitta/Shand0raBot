@@ -1,10 +1,11 @@
-from boutons import *
 from affichage import *
 from config import *
+import boutons
 
 load_dotenv()
 
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
+GUILD = str(os.getenv('DISCORD_GUILD'))
 
 
 async def initVar():
@@ -124,7 +125,14 @@ async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
             -------
             :return bool True si la réponse donnée est bonne et si le message a été envoyé dans le bon salon
         """
+        guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+        roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
+        roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
+
         if m.channel != channel:
+            return False
+
+        if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
             return False
 
         # 1)
@@ -229,6 +237,7 @@ def selectQuestion():
     """
     with open('One Piece.txt', 'r', encoding="utf-8") as source:
         data = [line for line in source]
+    random.seed(datetime.now())
     random.shuffle(data)
     s = data[0].split(":")
     return s[1].split(";")
@@ -244,14 +253,14 @@ def getReponses():
     return reponsesActuelles
 
 
-async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
+async def jeu(numJeu: int, tabJoueurDiscriminator: list):
     """ Méthode principale du jeu version quiz.
 
         Parameters
         ----------
         :param numJeu : int
             Numéro du jeu actuel
-        :param tabJoueurDiscriminator : [str]
+        :param tabJoueurDiscriminator : list
             tableau des joueurs avec leurs discriminants
     """
     global contexteExecution, numeroJeu, channel, questionActuelle, reponsesActuelles, tabPlayerDiscriminator
@@ -280,10 +289,14 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
             -------
             :return bool True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
         """
+        guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+        roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
+        roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
         if m.channel != channel:
             return False
 
-        # 0)
+        if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
+            return False
 
         # 1)
         def contains_word(toGuest, userAnswer):
@@ -291,8 +304,9 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
 
         reponses = getReponses()
         tableauReps = reponses.split("/")
-        for rep in tableauReps:
-            if contains_word(rep.lower(), m.content.lower()):
+        print(tableauReps)
+        for reps in tableauReps:
+            if contains_word(reps.lower(), m.content.lower()):
                 return True
 
         # 2)
@@ -301,14 +315,14 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
             wrongLettersUser = []
             goodLettersAnswer = []
 
-            for rep in tableauReps:
+            for reps in tableauReps:
 
-                tailleUserAnswer = len(rep)
+                tailleUserAnswer = len(reps)
                 tailleAnswer = len(m.content)
 
                 # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
                 if tailleUserAnswer == tailleAnswer:
-                    tabCarAnswer = list(rep.lower())
+                    tabCarAnswer = list(reps.lower())
                     tabCarUser = list(m.content.lower())
 
                     for i in range(tailleUserAnswer):
@@ -324,7 +338,6 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
         else:  # 3
             print("#3")
             return False
-        print("#4")
 
         return m.content.lower() in [y.lower() for y in tableauReps]
         # m.content.lower() == rep.lower
@@ -340,22 +353,38 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
             while question in questionsVues:
                 data = selectQuestion()
                 question = data[indiceQuestion]
-
+                tabRep = data[indiceReponses]
+                typeQuestion = data[indiceTypeQuestion]
+        tabRep = "Teach"
         questionsVues.append(question)
         questionActuelle = question
         reponsesActuelles = tabRep
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         #
+        # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         if int(typeQuestion) == choixMultiple:
             embed = discord.Embed(
-                title=questions1[0][0],
+                title="🔸 " + questionActuelle,
                 color=colorEmbedWhiteDBV
             )
-            await contexteExecution.send(embed=embed)
+            rep = data[3].rstrip("\n")
+            msgv = await contexteExecution.send(embed=embed)
             await asyncio.sleep(delaiDebutPartie)
-            await contexteExecution.send(" ‏‏‎ ", view=Quiz(["Luffy", "Law", "Jinbe", "Boa"], "Luffy"))
-            await client.wait_for("button_click")
+            # dataV = []
+            view = boutons.Quiz(tabRep.replace("\n", "").split("/"), rep, (len(tabPlayer[0]) + len(tabPlayer[1])))
+            await msgv.edit(view=view)
+            finView = await view.wait()
+            if finView:
+                await printEmbedTimeout(rep)
+            else:
+                if boutons.dataV[0]:
+                    await calculPoints(boutons.dataV[1], tabPlayerDiscriminator)
+                    await printEmbedBonneReponse(rep, boutons.dataV[1].display_name, pointsTeam1, pointsTeam2, valTeam1,
+                                                 valTeam2)
+                elif not boutons.dataV[0]:
+                    await printEmbedNoAnswer(rep)
             numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
+            boutons.dataV = []
             pass
 
         else:
@@ -384,7 +413,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: [str]):
                 else:
                     await calculPoints(message.author, tabPlayerDiscriminator)
                     reponse = tabRep
-                    await printEmbedBonneReponse(reponse, message, pointsTeam1, pointsTeam2, valTeam1,
+                    await printEmbedBonneReponse(reponse, message.author.display_name, pointsTeam1, pointsTeam2, valTeam1,
                                                  valTeam2)
                     numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
                     break
@@ -401,7 +430,6 @@ def sauvegardeScore(tabPlayerDiscriminator):
                tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
 
     """
-    # tab = [("Yung", 7), ("Marius", 7), ("Said", 4), ("AzoSituations", 6)]
     data = []
     # récuperation de l'ensemble des scores actuels
     with open('scores.txt', 'r', encoding="utf-8") as source:
@@ -421,7 +449,6 @@ def sauvegardeScore(tabPlayerDiscriminator):
                     data[i][1] += joueur[1]
         else:
             data.append([joueur[0], joueur[1]])
-    print(data)
     # sauvegarde de tous les scores après les avoir mis à jour
     with open('scores.txt', 'w') as target:
         for i in range(len(data)):
@@ -440,7 +467,7 @@ async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator):
             tableau de string contenant le nom de l'ensemble des joueurs
         :param ctx : Context
             contexte d'execution, nous sert principalement afin d'afficher les messages avec des boutons
-        :param tabPlayerDiscriminator : [str]
+        :param tabJoueurDiscriminator : [str]
             tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
         Returns
         ------

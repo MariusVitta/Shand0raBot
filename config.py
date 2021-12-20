@@ -22,8 +22,8 @@ client = commands.Bot(command_prefix=prefixBot, description=descriptionBot, inte
 tabEmoji = ["☠", "🦊"]  # emoji bleu, rouge
 medaillePremier = "🥇"
 medailleSecond = "🥈"
-mugiBoutonBlanc = "▫️ ☠️ Mugiwara :"
-foxyBoutonBlanc = "▫️ 🦊 Foxy :"
+mugiBoutonBlanc = "▫️ ☠️ Mugiwara : "
+foxyBoutonBlanc = "▫️ 🦊 Foxy : "
 tabRole = ["Mugiwara", "Foxy"]
 tabRoleBold = ["**Mugiwara**", "**Foxy**"]
 tabPlayer = [[], []]  # tableau des joueurs
@@ -39,7 +39,7 @@ titreDBV = "🎮 Davy Back Fight"
 descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n " \
                  "🔸 Pour rejoindre une équipe réagis à l'un des émojis \n\n " \
                  "▫️ ☠️ Mugiwara \n\n" \
-                 "▫️ 🦊 Foxy"
+                 "▫️ 🦊 Foxy\n‏"
 colorEmbedWhiteDBV = discord.Color.from_rgb(255, 255, 255)
 debutPartieDBV = "🔹 La première épreuve va commencer\n\n"
 tabTextEpreuve = ["🔹 **Epreuve 1 / 3**", "🔹 **Epreuve 2 / 3**", "🔹 **Epreuve 3 / 3** "]
@@ -85,11 +85,12 @@ nomEpreuve3 = "nom épreuve 3"
 
 # ----- MAUVAISES REPONSES -----
 timeout = "⏰  **Temps écoulé**"
-reponseText = "▫️ Réponses : "
+noAns = "🚨 **Pas de bonne réponse**"
+reponseText = "▫️ Réponse : "
 colorEmbedTimeout = discord.Color.from_rgb(204, 61, 61)
 
 # ----- BONNES REPONSES -----
-pointVert = "🟢 "
+pointVert = "<:rond3:922472655100190730> "
 textGoodAnswer = " a donné la bonne réponse"
 colorEmbedGoodAnswer = discord.Color.from_rgb(120, 177, 89)
 

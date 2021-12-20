@@ -1,9 +1,8 @@
-import discord
-
 from config import *
 
 load_dotenv()
 
+global channel
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 
@@ -22,9 +21,9 @@ async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str):
 
         Returns
         -------
-        :return int nouvelle indice du tableau de question
+        :return int nouvel indice du tableau de question
     """
-    if numQuestion != (nbQuestions *2) - 1:
+    if numQuestion != (nbQuestions * 2) - 1:
         await nextQuestion()
     elif numJeu != (len(tabEpreuves) - 1):
         await nextEpreuve(nomEpreuve)
@@ -32,26 +31,20 @@ async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str):
     return numQuestion
 
 
-def traitementTabReponse(tabReponses: [str]):
+def traitementTabReponse(tabReponses: list):
     """ Méthode formattage du tableau de réponse pour les faire afficher une à une par ligne
 
         Paramaters
         ----------
-        :param tabReponses: [str]
+        :param tabReponses : list
             tableau de réponses
 
         Returns
         -------
         :return string chaine des réponses
     """
-    reponsesFormat = ""
-    print(tabReponses)
     reps = tabReponses.split("/")
-    print(reps)
-    reponsesFormat = ','.join([rep for rep in reps])
-    return reponsesFormat
-    for rep in reps:
-        reponsesFormat += rep + (", " if rep != tabReponses[-1] else "")
+    reponsesFormat = reps[0]
     return reponsesFormat
 
 
@@ -78,19 +71,19 @@ async def printEmbedImage(fichier: str, numJeu: int, numQuestion: int, dossier: 
     await channel.send(file=discord.File(pathFlou + "/" + dossier + "/" + fichier), embed=embed)
 
 
-async def printEmbedTimeoutImage(fichier: str, reponse: [str], dossier: str):
+async def printEmbedTimeoutImage(fichier: str, reponse: list, dossier: str):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
         :param fichier : str
             nom du fichier à faire afficher dans l'embed
-        :param reponse : [str]
+        :param reponse : list
             ensemble des réponses pour l'image
         :param dossier : str
             nom du dossier contenant `fichier`
     """
-    reponses = ','.join([rep for rep in reponse])
+    reponses = reponse[0]
     embed = discord.Embed(
         title=timeout,
         description=reponseText + "`" + reponses + "`",
@@ -105,7 +98,7 @@ async def printEmbedNextEpreuve(nomEpreuve: str):
 
         Parameters
         ----------
-        :param nomEpreuve: str
+        :param nomEpreuve : str
             nom de l'epreuve actuelle
     """
     embed = discord.Embed(
@@ -139,7 +132,7 @@ async def printEmbedDebutPartie():
     await channel.send(embed=embed)
 
 
-async def printEmbedBonneReponseImage(fichier: str, reponse: [str], messageSender: any, dossier: str, pointsTeam1: int,
+async def printEmbedBonneReponseImage(fichier: str, reponse: list, messageSender: any, dossier: str, pointsTeam1: int,
                                       pointsTeam2: int, valTeam1: str, valTeam2: str):
     """ Methode d'affichage des messages du jeu.
 
@@ -147,7 +140,7 @@ async def printEmbedBonneReponseImage(fichier: str, reponse: [str], messageSende
         ----------
         :param fichier : str
             nom du fichier à faire afficher dans l'embed
-        :param reponse : [str]
+        :param reponse : list
             tableau des réponses pour l'image
         :param messageSender :
             tuple sur l'expéditeur du message de la bonne réponse
@@ -162,9 +155,9 @@ async def printEmbedBonneReponseImage(fichier: str, reponse: [str], messageSende
         :param valTeam2 : str
             string pour gerer l'affichage
     """
-    reponses = ','.join([rep for rep in reponse])
+    reponses = reponse[0]
     embed = discord.Embed(
-        title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
+        title=pointVert + str(messageSender.author.display_name) + textGoodAnswer + "\n\n",
         description=reponseText + "`" + reponses + "`\n\n" +
                     carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
             pointsTeam1) + " points``` \n\n" + \
@@ -176,15 +169,15 @@ async def printEmbedBonneReponseImage(fichier: str, reponse: [str], messageSende
     await channel.send(file=discord.File(path + "/" + dossier + "/" + fichier), embed=embed)
 
 
-async def printEmbedBonneReponse(answer: [str], messageSender: any, pointsTeam1: int, pointsTeam2: int, valTeam1: str,
+async def printEmbedBonneReponse(answer: list, messageSender: str, pointsTeam1: int, pointsTeam2: int, valTeam1: str,
                                  valTeam2: str):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
-        :param answer : [str]
+        :param answer : list
             tableau des réponses
-        :param messageSender :
+        :param messageSender : str
             tuple sur l'expéditeur du message de la bonne réponse
         :param pointsTeam1 : int
             points de l'equipe 1
@@ -198,7 +191,7 @@ async def printEmbedBonneReponse(answer: [str], messageSender: any, pointsTeam1:
 
     reponses = traitementTabReponse(answer)
     embed = discord.Embed(
-        title=pointVert + str(messageSender.author.name) + textGoodAnswer + "\n\n",
+        title=pointVert + str(messageSender) + textGoodAnswer + "\n\n",
         description=reponseText + "`" + reponses + "`\n\n" +
                     carreBlanc + " " + tabEmoji[0] + " " + tabRoleBold[0] + valTeam1 + str(
             pointsTeam1) + " points``` \n\n" + \
@@ -209,12 +202,12 @@ async def printEmbedBonneReponse(answer: [str], messageSender: any, pointsTeam1:
     await channel.send(embed=embed)
 
 
-async def printEmbedTimeout(answer: [str]):
+async def printEmbedTimeout(answer: list):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
-        :param answer : [str]
+        :param answer : list
             tableau des réponses
     """
     reponses = traitementTabReponse(answer)
@@ -226,12 +219,29 @@ async def printEmbedTimeout(answer: [str]):
     await channel.send(embed=embed)
 
 
-async def printEmbedQuestions(question: [str], numQuestion: int, numJeu: int):
+async def printEmbedNoAnswer(answer: list):
     """ Methode d'affichage des messages du jeu.
 
         Parameters
         ----------
-        :param question : [str]
+        :param answer : [str]
+            tableau des réponses
+    """
+    reponses = traitementTabReponse(answer)
+    embed = discord.Embed(
+        title=noAns,
+        description=reponseText + "`" + reponses + "`",
+        color=colorEmbedTimeout
+    )
+    await channel.send(embed=embed)
+
+
+async def printEmbedQuestions(question: list, numQuestion: int, numJeu: int):
+    """ Methode d'affichage des messages du jeu.
+
+        Parameters
+        ----------
+        :param question : list
             tableau des questions
         :param numQuestion : int
             numéro de la question actuelle
@@ -242,7 +252,7 @@ async def printEmbedQuestions(question: [str], numQuestion: int, numJeu: int):
     embed = discord.Embed(
 
         title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
-        description=carreBlanc + "**" + question + "**",
+        description="🔹 **" + question + "**",
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
@@ -268,55 +278,103 @@ async def nextEpreuve(nomEpreuve: str):
 
 async def printClue(mot):
     """ Methode d'affichage des indices du jeu.
+        Si le mot fait 1 caractère, on n'affiche rien
+        si le mot fait entre 2 et 3 caractères on affiche un seul caractère
+        Si le mot fait entre 4 et 6 caractères, on affiche un deux caractere pr l'indice
+        si le mot fait entre et entre 7 et 9 caractères, on affiche trois caractères
+        sinon si plus de 9 caractères, on affiche quatre caractères
 
         Parameters
         ---------
         :param mot : string
-            mot dont on va faire afficher 2 lettres en tant qu'indice
+            mot dont on va faire afficher X lettres en tant qu'indice
     """
+    if len(mot) < 2:
+        return
     mots = mot.split("/")
+    random.seed(datetime.now())
+    random.shuffle(mots)
     indice = mots[0]
-    car1, car2 = 1, 1
     listMot = list(indice)
-    while car1 == car2:  # on evite de choisir 2 fois la meme lettres à faire afficher en indice
-        car1 = random.randrange(0, len(listMot))
-        car2 = random.randrange(0, len(listMot))
-    for i in range(len(listMot)):  # on tranforme tout sauf les 2 lettres selectionnés en underscore
-        if listMot[i].isspace():
-            listMot[i] = "\t"
-        elif i != car1 and i != car2:
-            listMot[i] = "\_"
-    indice = "".join(listMot)
+    espace = " "
+    underscore = "_"
+    charArray = [",", "\"", "'", ":", "(", ")"]
 
+    if 2 <= len(mot) <= 3:
+        car1 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf la lettre selectionné en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+
+    elif 4 <= len(mot) <= 7:
+        car1, car2 = 1, 1
+        while car1 == car2:  # on évite de choisir 2 fois la meme lettres à faire afficher en indice
+            car1 = random.randrange(0, len(listMot))
+            car2 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf les 2 lettres selectionnés en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and i != car2 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+    elif 7 <= len(mot) <= 9:
+        car1, car2, car3 = 1, 1, 1
+        while car1 == car2 and car2 == car3:  # on évite de choisir 3 fois la meme lettre à faire afficher en indice
+            car1 = random.randrange(0, len(listMot))
+            car2 = random.randrange(0, len(listMot))
+            car3 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf les 2 lettres selectionnés en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and i != car2 and i != car3 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+    else:
+        car1, car2, car3, car4 = 1, 1, 1, 1
+        while car1 == car2 and car2 == car3 and car3 == car4:  # on évite de choisir 3 fois la meme lettre à faire afficher en indice
+            car1 = random.randrange(0, len(listMot))
+            car2 = random.randrange(0, len(listMot))
+            car3 = random.randrange(0, len(listMot))
+            car4 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf les 2 lettres selectionnés en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and i != car2 and i != car3 and i != car4 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+    print(indice)
     embed = discord.Embed(
-        title="⭐ Indice: " + indice,
-        color=discord.Color.from_rgb(255, 255, 0)
+        title="💡 Indice : `" + indice + "`",
+        color=discord.Color.from_rgb(255, 216, 63)
     )
     await channel.send(embed=embed)
 
 
-async def printPlayer(tabPlayer: [str]):
+async def printPlayer(tabJ: list):
     """ Méthode d'affichage de l'ensemble des joueurs
 
         Parameters
         ----------
-        :param tabPlayer : [str]
-            tabeau contenant le non de tout les joueurs
+        :param tabJ : list
+            tabeau contenant le non de tous les joueurs
 
     """
     global channel
     channel = client.get_channel(IDCHANNEL)
 
     team1, team2 = "", ""
-    for player in tabPlayer[0]:
+    for player in tabJ[0]:
         team1 += "- `" + player + "`\n"
-    for player in tabPlayer[1]:
+    for player in tabJ[1]:
         team2 += "- `" + player + "`\n"
     embed = discord.Embed(
         title=titreDBV,
         description=debutPartieDBV + carreBlanc + tabEmoji[indiceEquipe1] + " **" + tabRoleBold[
             indiceEquipe1] + "**\n" + team1 + "\n" + carreBlanc + tabEmoji[indiceEquipe2] + " **" + tabRoleBold[
-                        indiceEquipe2] + "**\n" + team2,
+                        indiceEquipe2] + "**\n" + team2 + "\n🔸 Question à choix multiple\n\n🔹 Question simple",
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)

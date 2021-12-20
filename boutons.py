@@ -1,10 +1,15 @@
-from imports import *
+import discord.ui
+from config import *
 
-questions1 = [["Quel est le plus beau fruit du démon ?",
-               ["Suna Suna no Mi", "Gomu Gomu no Mi", "Il lui retient son bras", "Ope Ope no Mi"],
-               "Il lui retient son bras"],
-              ["Laquelle de ces personnes n'a pas été grand corsaire ?", ["Luffy", "Law", "Jinbe", "Boa"], "Luffy"],
-              ["Qui est Amiral parmi ces personnes ?", ["Kizaru, Akainu, Imu"], "Kizaru"]]
+global tentative, dataV
+tentative = []
+dataV = []
+
+load_dotenv()
+
+GUILD = str(os.getenv('DISCORD_GUILD'))
+
+
 
 
 class QuizButton(discord.ui.Button):
@@ -21,41 +26,56 @@ class QuizButton(discord.ui.Button):
         assert self.view is not None
         view: Quiz = self.view
 
-        if self.rep == self.bonneReponse:
-            await interaction.response.send_message("Bonne reponse")
-            self.disabled = True
-            for i in view.children:
-                view.remove_item(i)
-                # view.clear_items()
-        else:
-            await view.stop1()
-            await interaction.response.send_message("Mauvaise reponse\nLa bonne réponse était: " + self.bonneReponse)
+        guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+        roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
+        roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
 
+        # verification que c'est bien un joueur
+        if roleTeam1 not in interaction.user.roles and roleTeam2 not in interaction.user.roles:
+            return
+        if interaction.user.display_name in tentative:  # Cas où le joueur a déjà répondu
+            await interaction.response.send_message("Vous avez déjà répondu ! Une seule tentative par personne.",
+                                                    ephemeral=True)
 
+        elif self.rep == self.bonneReponse or (len(tentative) + 1) == view.nbJoueurs:
+            if self.rep == self.bonneReponse:  # Cas où un joueur a trouvé la bonne réponse
+                for i in view.children:
+                    i.disabled = True
+                    if i.rep == self.bonneReponse:
+                        i.style = discord.ButtonStyle.green
+                    else:
+                        i.style = discord.ButtonStyle.red
+                await interaction.response.edit_message(view=self.view)
+                dataV.extend([True, interaction.user])
+                view.stop()
+
+            else:  # Cas où tout le monde a répondu mais il n'y a pas de bonne réponse
+                for i in view.children:
+                    i.disabled = True
+                    if i.rep == self.bonneReponse:
+                        i.style = discord.ButtonStyle.green
+                    else:
+                        i.style = discord.ButtonStyle.red
+                await interaction.response.edit_message(view=self.view)
+                dataV.extend([False, None])
+                view.stop()
+
+        else:  # Cas où le joueur répond faux
+            await interaction.response.send_message("Mauvaise reponse ! Vous n'avez plus de tentative.", ephemeral=True)
+            tentative.append(interaction.user.display_name)
 
 
 class Quiz(discord.ui.View):
     children: typing.List[QuizButton]
 
-    def __init__(self, tabReponses, bonneReponse):
+    def __init__(self, tabReponses, bonneReponse, nbJoueurs):
         self.tabReponses = tabReponses
         self.bonneReponse = bonneReponse
-        super().__init__(timeout=20)
+        self.nbJoueurs = nbJoueurs
+
+        super().__init__(timeout=20.0)
         for i in range(len(tabReponses)):
             self.add_item(QuizButton(tabReponses, tabReponses[i], bonneReponse, i))
-
-    async def on_timeout(self):
-        self.stop()
-
-        print("timeout")
-        return
-        # await self.send("Timeout masta")
-
-    async def stop1(self):
-        for i in self.children:
-            print(i)
-            i.disabled = True
-            self.remove_item(i)
 
     async def on_error(self, error: Exception, item: Item, interaction: Interaction):
         await interaction.response.send_message(str(error))
