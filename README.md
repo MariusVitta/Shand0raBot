@@ -10,10 +10,12 @@ Ce bot discord a été réalisé avec Python et est utilisé comme bot pour joue
 ## Prérequis
 * Python 3.8 ou ultérieure
 - module Discord.py 2.0 ou ultérieure
+- une version de jellyfish 0.8.9 ou ultérieure
+- une version de Pillow 8.4.0 ou ultérieure
 
 
 ## Installation
-#### Discord.py
+#### Discord.py 2.0
 - Passer par PyCharm afin de faciliter l'installation
 - par ligne de commande `pip install -U git+https://github.com/Rapptz/discord.py`
 
