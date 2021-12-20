@@ -1,5 +1,6 @@
 from games import *
 from logs import *
+from traces import *
 
 load_dotenv()
 
@@ -8,7 +9,7 @@ GUILD = str(os.getenv('DISCORD_GUILD'))
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
-global partieEnCours, nombreJoueurs, contexteExecution
+global partieEnCours, nombreJoueurs, contexteExecution, trace
 partieEnCours = False
 
 
@@ -63,7 +64,7 @@ async def start(self, message):
         message : string
             message pour lancer le jeu voulu
     """
-    global contexteExecution
+    global contexteExecution, trace
     contexteExecution = self
     message.lower()
     channel = self.channel
@@ -88,6 +89,8 @@ async def start(self, message):
         await self.channel.send(usageBot)
         return
 
+    # création de la trace pour cette partie
+    trace = Traces()
     await removeRoles(self, [])
     # await choixNombreJoueurs()
     embed = discord.Embed(
@@ -95,9 +98,11 @@ async def start(self, message):
         description=descriptionDBV,
         color=colorEmbedWhiteDBV
     )
-
     embed.set_footer(text="Session lancée par {}".format(self.message.author.display_name), icon_url=self.message.author.avatar)
     choix = await channel.send(embed=embed, delete_after=30.0)
+    # ---- trace ------
+    trace.createFile(self.message.author.name)
+
     # ajout des réactions au message du bot
     for emoji in tabEmoji:
         await choix.add_reaction(emoji)
@@ -137,7 +142,7 @@ async def restart(self):
             :param self :
                 contexte d'execution
     """
-    await start(self, 'dvb')
+    await start(self, messageStart)
     return
 
 
@@ -265,8 +270,11 @@ async def attente_joueur(payload):
         await reactionEquipe1.clear()
         await reactionEquipe2.clear()
         if not partieEnCours:
+
+            # ---- trace ------
+            trace.numberPlayer(tabPlayer)
             partieEnCours = True
-            partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator)
+            partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
         await removeRoles(payload, tabPlayer)
 
 
@@ -315,6 +323,31 @@ async def stop(ctx):
         )
         await ctx.channel.send(embed=embed)
 
+@client.command()
+async def match(self, *, message):
+    chaineADeviner = "Kurapika".lower()
+    split = message.lower().split(" ")
+    if jellyfish.damerau_levenshtein_distance(chaineADeviner, message.lower()) <= 1:  # on regarde les changements de position des lettres
+        await self.channel.send("bonne réponse")
+    elif jellyfish.levenshtein_distance(chaineADeviner, message.lower()) <= 1:  # puis on regarde le changement de lettre
+        await self.channel.send("bonne réponse à quelques lettres pret")
+    return
+    for m in split:
+        if jellyfish.damerau_levenshtein_distance(chaineADeviner, m) <= 1:  # on regarde les changements de position des lettres
+            await self.channel.send("bonne réponse")
+        elif jellyfish.levenshtein_distance(chaineADeviner, m) <= 2:  # puis on regarde le changement de lettre
+            await self.channel.send("bonne réponse à quelques lettres pret")
+
+
+    return
+    moitie = len(chaineADeviner) / 2 + 1
+    print(chaineADeviner[0:int(moitie)])
+    if message.lower().startswith(chaineADeviner[0:int(moitie)].lower()):
+        await self.channel.send(
+            "Bien joué, la chaine à deviner était:" + chaineADeviner + "\n votre réponse: " + message)
+    else:
+        await self.channel.send("Vous n'êtes pas loin de la réponse !")
+    return
 
 async def removeRoles(ctx, players: list):
     """ Methode de retrait des rôles de jeux des joueurs.

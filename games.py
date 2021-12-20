@@ -28,9 +28,9 @@ async def calculPoints(messageAuthor, tabJoueurDiscriminator: [str]):
         :param messageAuthor : Any
             un tuple de plusieurs arguments sur l'auteur du message
         :param tabJoueurDiscriminator : [str]
-            tableau des joueurs avec leurs discriminants
+            tableau des joueurs avec leurs discriminants, nous sert essentiellement pour sauvegarder les points des joueurs en fin de partie
     """
-    global pointsTeam2, pointsTeam1, valTeam1, valTeam2, indiceTab, tabPlayerDiscriminator
+    global pointsTeam2, pointsTeam1, valTeam1, valTeam2, tabPlayerDiscriminator
     tabPlayerDiscriminator = tabJoueurDiscriminator
     if tabRole[indiceEquipe1].lower() in [y.name.lower() for y in messageAuthor.roles]:
         pointsTeam1 += 1
@@ -56,7 +56,7 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
         Parameters
         ----------
         :param fichier :str
-            nom de l'image que l'on veut pixelisée
+            nom de l'image que l'on veut pixeliser
         :param valeurResize :int
             taille du resize de l'image
         :param dossier :str
@@ -85,17 +85,19 @@ def selectManga():
     return mangas[0]
 
 
-async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
+async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
     """ Méthode principale du jeu version image.
 
         Parameters
         ----------
         :param numJeu : int
             Numéro du jeu actuel
+        :param tabJDiscriminator : [str]
+            tableaux des joueurs avec leurs discriminants
     """
-    global indiceTab, numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2, channel
+    global numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2, channel, tabPlayerDiscriminator
+    tabPlayerDiscriminator = tabJDiscriminator
     numeroJeu = numJeu
-    indiceTab = 0
     tabBonnesReponse = []
     imagesVues = []
 
@@ -107,14 +109,14 @@ async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
-            1) on va verifier que le nom que l'on cherche est pas dans la chaine => :
+            1) on va verifier que le nom que l'on cherche n'est pas dans la chaine → :
                 - Sabo ✅
-                - aSabo ❌ Pas validé car le mot forme aSabo
-                - a Sabo => ✅ Car le bot prend en compte seulement le "Sabo" et pas les caractères qui sont devant et derrière lorsqu'il y a un espace
+                - aSabo ❌ Pas validé, car le mot forme aSabo
+                - a Sabo → ✅ Car le bot prend en compte seulement le "Sabo" et pas les caractères qui sont devant et derrière lorsqu'il y a un espace
 
             2) on va verifier qu'il y a qu'un seul caractère de faux dans la réponse
-                - Lufyf au lieu de Luffy ❌ Pas validé car ne dépasse pas 7 caractères
-                - Sentomaur au lieu de Sentomaru ✅  Validé car dépasse 7 caractères
+                - Lufyf au lieu de Luffy ❌ Pas validé, car ne dépasse pas 7 caractères
+                - Sentomaur au lieu de Sentomaru ✅ Validé, car dépasse 7 caractères
 
             3) dans tous les autres cas on retourne False
             Parameters
@@ -131,7 +133,7 @@ async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
 
         if m.channel != channel:
             return False
-
+        # on empêche aux non-joueurs de jouer simplement
         if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
             return False
 
@@ -140,35 +142,23 @@ async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
             return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
 
         for rep in tabBonnesReponse:
-            if contains_word(rep.lower(), m.content.lower()):
+            if contains_word(rep.lower(), m.content.lower()) or contains_word(m.content.lower(), rep.lower()):
                 return True
-        # 2)
+
+        # si le mot fait plus de caractères on va chercher à avoir le nombre de lettre mal placés/mauvaises lettres
         if len(m.content) > 7:
-            wrongLettersUser = []
-            goodLettersAnswer = []
-            for rep in tabBonnesReponse:
-
-                tailleUserAnswer = len(rep)
-                tailleAnswer = len(m.content)
-                # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
-                if tailleUserAnswer == tailleAnswer:
-                    tabCarAnswer = list(rep.lower())
-                    tabCarUser = list(m.content.lower())
-
-                    for i in range(tailleUserAnswer):
-                        if tabCarAnswer[i].lower() != tabCarUser[i].lower():
-                            wrongLettersUser.append(tabCarUser[i].lower())
-                            goodLettersAnswer.append(tabCarAnswer[i].lower())
-
-                    if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
+            print(tabBonnesReponse)
+            for reps in tabBonnesReponse:
+                for rSplit in reps.split(" "):
+                    if jellyfish.damerau_levenshtein_distance(m.content.lower(),
+                                                              rSplit.lower()) <= 1:  # on regarde les changements de position des lettres
                         return True
-
-                    elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
-                        return False
-
-        else:  # 3
+                    elif jellyfish.levenshtein_distance(m.content.lower(),
+                                                        rSplit.lower()) <= 1:  # puis on regarde le changement de lettre
+                        return True
             return False
-        return
+        else:
+            return m.content.lower() in [y.lower() for y in tabBonnesReponse]
 
     for numQuestion in range(nbQuestions):
 
@@ -212,7 +202,6 @@ async def jeuImage(numJeu: int, tabPlayerDiscriminator: [str]):
 
                     if numQuestion != nbQuestions - 1:
                         await nextQuestion()
-                    indiceTab += 1
                     break
 
             # sinon on met à jour les points de l'equipe qui a marqué un point,
@@ -270,14 +259,14 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
-            1) on va verifier que le nom que l'on cherche est pas dans la chaine => :
+            1) on va verifier que le nom que l'on cherche n'est pas dans la chaine → :
                 - Sabo ✅
-                - aSabo ❌ Pas validé car le mot forme aSabo
-                - a Sabo => ✅ Car le bot prend en compte seulement le "Sabo" et pas les caractères qui sont devant et derrière lorsqu'il y a un espace
+                - aSabo ❌ Pas validé, car le mot forme aSabo
+                - a Sabo → ✅ Car le bot prend en compte seulement le "Sabo" et pas les caractères qui sont devant et derrière lorsqu'il y a un espace
 
             2) on va verifier qu'il y a qu'un seul caractère de faux dans la réponse
-                - Lufyf au lieu de Luffy ❌ Pas validé car ne dépasse pas 7 caractères
-                - Sentomaur au lieu de Sentomaru ✅  Validé car dépasse 7 caractères
+                - Lufyf au lieu de Luffy ❌ Pas validé, car ne dépasse pas 7 caractères
+                - Sentomaur au lieu de Sentomaru ✅ Validé, car dépasse 7 caractères
 
             3) dans tous les autres cas on retourne False
 
@@ -304,43 +293,23 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
         reponses = getReponses()
         tableauReps = reponses.split("/")
-        print(tableauReps)
         for reps in tableauReps:
-            if contains_word(reps.lower(), m.content.lower()):
+            if contains_word(reps.lower(), m.content.lower()) or contains_word(m.content.lower(), reps.lower()):
                 return True
 
         # 2)
         if len(m.content) > 7:
-            print("#2")
-            wrongLettersUser = []
-            goodLettersAnswer = []
-
             for reps in tableauReps:
-
-                tailleUserAnswer = len(reps)
-                tailleAnswer = len(m.content)
-
-                # on ne s'occupe pas du cas ou les 2 chaines ont une taille différente
-                if tailleUserAnswer == tailleAnswer:
-                    tabCarAnswer = list(reps.lower())
-                    tabCarUser = list(m.content.lower())
-
-                    for i in range(tailleUserAnswer):
-                        if tabCarAnswer[i].lower() != tabCarUser[i].lower():
-                            wrongLettersUser.append(tabCarUser[i].lower())
-                            goodLettersAnswer.append(tabCarAnswer[i].lower())
-                    if len(wrongLettersUser) == 1 and len(goodLettersAnswer) == 1:
+                for rSplit in reps.split(" "):
+                    if jellyfish.damerau_levenshtein_distance(m.content.lower(),
+                                                              rSplit.lower()) <= 1:  # on regarde les changements de position des lettres
                         return True
-
-                    elif len(wrongLettersUser) <= 2 and len(goodLettersAnswer) <= 2:
-                        return False
-
-        else:  # 3
-            print("#3")
+                    elif jellyfish.levenshtein_distance(m.content.lower(),
+                                                        rSplit.lower()) <= 1:  # puis on regarde le changement de lettre
+                        return True
             return False
-
-        return m.content.lower() in [y.lower() for y in tableauReps]
-        # m.content.lower() == rep.lower
+        else:
+            return m.content.lower() in [y.lower() for y in tableauReps]
 
     for numQuestion in range(nbQuestions * 2):
 
@@ -355,7 +324,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 question = data[indiceQuestion]
                 tabRep = data[indiceReponses]
                 typeQuestion = data[indiceTypeQuestion]
-        tabRep = "Teach"
+        trace.saveTraceQuestions(numQuestion, question, tabRep, typeQuestion)
         questionsVues.append(question)
         questionActuelle = question
         reponsesActuelles = tabRep
@@ -413,7 +382,8 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 else:
                     await calculPoints(message.author, tabPlayerDiscriminator)
                     reponse = tabRep
-                    await printEmbedBonneReponse(reponse, message.author.display_name, pointsTeam1, pointsTeam2, valTeam1,
+                    await printEmbedBonneReponse(reponse, message.author.display_name, pointsTeam1, pointsTeam2,
+                                                 valTeam1,
                                                  valTeam2)
                     numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
                     break
@@ -421,12 +391,12 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
     return
 
 
-def sauvegardeScore(tabPlayerDiscriminator):
+def sauvegardeScore(tabJDiscriminator: [str]):
     """ Methode de sauvegarde du score des joueurs.
 
            Parameters
            ----------
-           :param tabPlayerDiscriminator : [array)
+           :param tabJDiscriminator : [array]
                tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
 
     """
@@ -441,7 +411,7 @@ def sauvegardeScore(tabPlayerDiscriminator):
 
     # joueurDiscriminator = messageAuthor.name + "#" + messageAuthor.discriminator
     # on parcourt le tableau des resultats pour modifier le score des joueurs déjà existant
-    for joueur in tabPlayerDiscriminator:
+    for joueur in tabJDiscriminator:
         # si le joueur avait déjà un score auparavant, on va mettre à jour son score simplement
         if joueur[0] in [j[0] for j in data]:
             for i in range(len(data)):
@@ -457,7 +427,7 @@ def sauvegardeScore(tabPlayerDiscriminator):
     pass
 
 
-async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator):
+async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator, traceGame):
     """ Methode de lancement du jeu.
         Initialise les variables et lance l'ensemble des jeux
 
@@ -469,27 +439,31 @@ async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator):
             contexte d'execution, nous sert principalement afin d'afficher les messages avec des boutons
         :param tabJoueurDiscriminator : [str]
             tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
+        :param traceGame : Traces
+            instance de la classe Traces qui nous permettra de sauvegarder l'ensemble des parties dans un fichier de trace
         Returns
         ------
         :return bool fin de partie
     """
-    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution, channel, tabPlayerDiscriminator
+    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution, channel, tabPlayerDiscriminator, trace
     await initVar()
     tabPlayer = tabJoueur
     contexteExecution = ctx
     tabPlayerDiscriminator = tabJoueurDiscriminator
+    trace = traceGame
     await printPlayer(tabPlayer)
     await asyncio.sleep(delaiDebutPartie)
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
-
+    trace.traceQuestionQuiz()
     await jeu(0, tabPlayerDiscriminator)
+    trace.traceQuestionImage()
     await jeuImage(1, tabPlayerDiscriminator)
-    pass
+
     await printWinners(pointsTeam1, pointsTeam2)
     sauvegardeScore(tabPlayerDiscriminator)
-    pointsTeam2 = 0
     pointsTeam1 = 0
+    pointsTeam2 = 0
 
     partieEnCours = False
     return partieEnCours

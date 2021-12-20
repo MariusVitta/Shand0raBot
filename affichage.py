@@ -63,8 +63,7 @@ async def printEmbedImage(fichier: str, numJeu: int, numQuestion: int, dossier: 
             numéro du jeu actuel
     """
     embed = discord.Embed(
-        title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
-        description=carreBlanc + "Qui est ce personnage ?",
+        title=carreBlanc + "Qui est ce personnage ?",
         color=colorEmbedWhiteDBV
     )
     embed.set_image(url="attachment://" + fichier)
@@ -251,8 +250,7 @@ async def printEmbedQuestions(question: list, numQuestion: int, numJeu: int):
     """"Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu] + "\n\n" + carreBlanc + question"""
     embed = discord.Embed(
 
-        title="Question " + str(numQuestion + 1) + " | " + tabEpreuves[numJeu],
-        description="🔹 **" + question + "**",
+        title="🔹 **" + question + "**",
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
