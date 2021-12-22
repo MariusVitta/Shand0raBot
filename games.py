@@ -180,8 +180,8 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 file = files[0]
         imagesVues.append(file)
 
-        dossier = "One Piece"
-        file = "Rob_Lucci.png"
+        """dossier = "One Piece"
+        file = "Rob_Lucci.png"""
 
         # pixelisation de l'image
         traitementImage(file, tabTailleResize[0], dossier)
