@@ -62,7 +62,6 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
         :param dossier :str
             dossier ou se trouve l'image actuellement
     """
-    # define the access rights
     img = Image.open(path + "/" + dossier + "/" + fichier)
     imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
     result = imgSmall.resize(img.size, Image.NEAREST)
@@ -104,7 +103,6 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
     def traitementNom(nomFichier: str):
         tempName = os.path.splitext(nomFichier)
         tabRep = tempName[0].split("-")
-        tabRep = [rep.replace("_", " ") for rep in tabRep]
         return tabRep
 
     def checkMessage(m):
@@ -138,27 +136,30 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
             return False
 
         # 1)
-        def contains_word(toGuest, userAnswer):
-            return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
+        def contains_word(userAnswer, toGuess):
+            return (' ' + userAnswer + ' ') in (' ' + toGuess + ' ')
 
         for rep in tabBonnesReponse:
-            if contains_word(rep.lower(), m.content.lower()) or contains_word(m.content.lower(), rep.lower()):
-                return True
-
-        # si le mot fait plus de caractères on va chercher à avoir le nombre de lettre mal placés/mauvaises lettres
-        if len(m.content) > 7:
-            print(tabBonnesReponse)
+            if "_" in rep:
+                rep = rep.replace("_", " ").lower()
+                if contains_word(rep.lower(), m.content.lower()):
+                    return True
+            else:
+                for word in m.content.split(" "):
+                    if word.lower() in rep.lower():
+                        return True
+        return False
+        # si le mot fait plus de caractères on va chercher à avoir le nombre de lettres mal placé/mauvaises lettres
+        """if len(m.content) > 7:
             for reps in tabBonnesReponse:
-                for rSplit in reps.split(" "):
-                    if jellyfish.damerau_levenshtein_distance(m.content.lower(),
-                                                              rSplit.lower()) <= 1:  # on regarde les changements de position des lettres
-                        return True
-                    elif jellyfish.levenshtein_distance(m.content.lower(),
-                                                        rSplit.lower()) <= 1:  # puis on regarde le changement de lettre
-                        return True
-            return False
-        else:
-            return m.content.lower() in [y.lower() for y in tabBonnesReponse]
+                if jellyfish.damerau_levenshtein_distance(m.content.lower(),
+                                                          reps.lower()) <= 1:  # on regarde les changements de position des lettres
+                    return True
+                elif jellyfish.levenshtein_distance(m.content.lower(),
+                                                    reps.lower()) <= 1:  # puis on regarde le changement de lettre
+                    return True
+            return False"""
+
 
     for numQuestion in range(nbQuestions):
 
@@ -178,6 +179,9 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 random.shuffle(files)
                 file = files[0]
         imagesVues.append(file)
+
+        dossier = "One Piece"
+        file = "Rob_Lucci.png"
 
         # pixelisation de l'image
         traitementImage(file, tabTailleResize[0], dossier)
@@ -286,30 +290,30 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
         if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
             return False
+        trace.saveTraceAnswer(m.author.name, m.content)
 
         # 1)
-        def contains_word(toGuest, userAnswer):
-            return (' ' + userAnswer + ' ') in (' ' + toGuest + ' ')
+        def contains_word(userAnswer, toGuess):
+            return (' ' + userAnswer + ' ') in (' ' + toGuess + ' ')
 
         reponses = getReponses()
         tableauReps = reponses.split("/")
-        for reps in tableauReps:
-            if contains_word(reps.lower(), m.content.lower()) or contains_word(m.content.lower(), reps.lower()):
+        for rep in tableauReps:
+            if contains_word(rep.lower(), m.content.lower()):  # contains_word(m.content.lower(), rep.lower()):  # # or
                 return True
 
         # 2)
         if len(m.content) > 7:
             for reps in tableauReps:
-                for rSplit in reps.split(" "):
-                    if jellyfish.damerau_levenshtein_distance(m.content.lower(),
-                                                              rSplit.lower()) <= 1:  # on regarde les changements de position des lettres
-                        return True
-                    elif jellyfish.levenshtein_distance(m.content.lower(),
-                                                        rSplit.lower()) <= 1:  # puis on regarde le changement de lettre
-                        return True
+                if jellyfish.damerau_levenshtein_distance(m.content.lower(),
+                                                          reps.lower()) <= 1:  # on regarde les changements de position des lettres
+                    return True
+                elif jellyfish.levenshtein_distance(m.content.lower(),
+                                                    reps.lower()) <= 1:  # puis on regarde le changement de lettre
+                    return True
             return False
-        else:
-            return m.content.lower() in [y.lower() for y in tableauReps]
+        #else:
+         #   return m.content.lower() in [y.lower() for y in tableauReps]
 
     for numQuestion in range(nbQuestions * 2):
 
@@ -354,6 +358,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                     await printEmbedNoAnswer(rep)
             numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
             boutons.dataV = []
+            boutons.tentative = []
             pass
 
         else:

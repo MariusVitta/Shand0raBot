@@ -90,7 +90,7 @@ class Traces:
             target.close()
         return
 
-    def saveTraceQuestions(self, numQuestion, question, answer, type):
+    def saveTraceQuestions(self, numQuestion, question, answer, typeQuestion):
         """ Méthode de sauvegarde des questions de la partie
                 YYYY-MM-DD_HH:MM:SS_name
 
@@ -102,18 +102,35 @@ class Traces:
                     question
                 :param answer : [str]
                     réponse de la question
-                :param type : int
+                :param typeQuestion : int
                     type de question
         """
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("# --- [Question {}] ---#\n".format(numQuestion + 1))
                 target.write("# --- Question: {} ---#\n".format(question))
-                if len(answer) > 1:
-                    reponse = "-".join(answer)
-                else:
-                    reponse = answer
-                target.write("# --- Réponse(s): {} ---#\n".format(reponse))
+                target.write("# --- Réponse(s): {} ---#\n".format(answer))
+                target.write("# --- type de questions: {} ---#\n".format(typeQuestion))
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def saveTraceAnswer(self, namePlayer, answer):
+        """ Méthode de sauvegarde des questions de la partie
+                YYYY-MM-DD_HH:MM:SS_name
+
+            Parameters
+            ---------
+            :param namePlayer : str
+                nom du joueur
+            :param answer : str
+                réponse de la question
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("Joueur : {} , réponse : {} namePlayer".format(namePlayer, answer))
                 target.write("\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))

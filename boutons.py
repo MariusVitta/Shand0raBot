@@ -1,4 +1,4 @@
-import discord.ui
+import discord
 from config import *
 
 global tentative, dataV
@@ -6,10 +6,6 @@ tentative = []
 dataV = []
 
 load_dotenv()
-
-GUILD = str(os.getenv('DISCORD_GUILD'))
-
-
 
 
 class QuizButton(discord.ui.Button):
@@ -26,13 +22,15 @@ class QuizButton(discord.ui.Button):
         assert self.view is not None
         view: Quiz = self.view
 
-        guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+        # Vérification que c'est bien un joueur de la session en cours
+        guild = interaction.guild
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
         roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
-
-        # verification que c'est bien un joueur
-        if roleTeam1 not in interaction.user.roles and roleTeam2 not in interaction.user.roles:
+        member = guild.get_member(interaction.user.id)
+        if roleTeam1 not in member.roles and roleTeam2 not in member.roles:
+            await interaction.response.send_message("Vous ne pouvez pas répondre ! Vous ne jouez pas cette session.", ephemeral=True)
             return
+
         if interaction.user.display_name in tentative:  # Cas où le joueur a déjà répondu
             await interaction.response.send_message("Vous avez déjà répondu ! Une seule tentative par personne.",
                                                     ephemeral=True)

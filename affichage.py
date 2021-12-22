@@ -154,7 +154,10 @@ async def printEmbedBonneReponseImage(fichier: str, reponse: list, messageSender
         :param valTeam2 : str
             string pour gerer l'affichage
     """
-    reponses = reponse[0]
+    if "_" in reponse[0]:
+        reponses = reponse[0].replace("_", " ")
+    else:
+        reponses = reponse[0]
     embed = discord.Embed(
         title=pointVert + str(messageSender.author.display_name) + textGoodAnswer + "\n\n",
         description=reponseText + "`" + reponses + "`\n\n" +
@@ -343,7 +346,6 @@ async def printClue(mot):
             elif i != car1 and i != car2 and i != car3 and i != car4 and listMot[i] not in charArray:
                 listMot[i] = underscore
         indice = "".join(listMot)
-    print(indice)
     embed = discord.Embed(
         title="💡 Indice : `" + indice + "`",
         color=discord.Color.from_rgb(255, 216, 63)
