@@ -82,7 +82,10 @@ async def printEmbedTimeoutImage(fichier: str, reponse: list, dossier: str):
         :param dossier : str
             nom du dossier contenant `fichier`
     """
-    reponses = reponse[0]
+    if "_" in reponse[0]:
+        reponses = reponse[0].replace("_", " ")
+    else:
+        reponses = reponse[0]
     embed = discord.Embed(
         title=timeout,
         description=reponseText + "`" + reponses + "`",
@@ -289,6 +292,10 @@ async def printClue(mot):
         ---------
         :param mot : string
             mot dont on va faire afficher X lettres en tant qu'indice
+
+        Returns
+        -------
+        :return str l'indice
     """
     if len(mot) < 2:
         return
@@ -351,6 +358,8 @@ async def printClue(mot):
         color=discord.Color.from_rgb(255, 216, 63)
     )
     await channel.send(embed=embed)
+
+    return indice
 
 
 async def printPlayer(tabJ: list):

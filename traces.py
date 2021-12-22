@@ -67,7 +67,61 @@ class Traces:
         """
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
                 target.write("# ---*** [QUIZ] ***---#\n")
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def traceFinQuestionQuiz(self):
+        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
+              YYYY-MM-DD_HH:MM:SS_name
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# ---*** [FIN DE QUIZ] ***---#\n")
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def traceTimeout(self):
+        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
+              YYYY-MM-DD_HH:MM:SS_name
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# ----- [TIMEOUT] -----#\n")
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def saveTraceIndice(self, indice):
+        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
+              YYYY-MM-DD_HH:MM:SS_name
+
+            Parameters
+            ---------
+            :param indice : str
+                indice de la réponse actuelle
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# --- Indice: {} -----#\n".format(indice))
                 target.write("\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
@@ -82,7 +136,23 @@ class Traces:
         """
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
-                target.write("# ---*** [IMAGES] ***---#\n")
+                target.write("\n# ---*** [IMAGES] ***---#\n")
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def traceFinQuestionImage(self):
+        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
+              YYYY-MM-DD_HH:MM:SS_name
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# ---*** [FIN DE QUIZ IMAGE] ***---#\n")
                 target.write("\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
@@ -107,10 +177,53 @@ class Traces:
         """
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
-                target.write("# --- [Question {}] ---#\n".format(numQuestion + 1))
+                target.write("\n# --- [Question {}] ---#\n".format(numQuestion + 1))
                 target.write("# --- Question: {} ---#\n".format(question))
                 target.write("# --- Réponse(s): {} ---#\n".format(answer))
-                target.write("# --- type de questions: {} ---#\n".format(typeQuestion))
+                target.write("# --- type de questions: {} ---#\n\n".format(typeQuestion.replace("\n", "")))
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def saveTraceBoutons(self, namePlayer, answer):
+        """ Méthode de sauvegarde des questions de la partie
+                YYYY-MM-DD_HH:MM:SS_name
+
+                Parameters
+                ---------
+                :param namePlayer : str
+                    nom du joueur qui a donné la bonne réponse
+                :param answer : [str]
+                    réponse de la question
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("[MULTIPLE] Joueur : {} , réponse : {}".format(namePlayer, answer))
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def traceTimeoutBoutons(self, reponse):
+        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
+              YYYY-MM-DD_HH:MM:SS_name
+
+            Parameters
+            ----------
+            :param reponse: str
+                bonne réponse
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# ----- [TIMEOUT No answer]  -----#\n")
+                target.write("# Bonne réponse: {}\n".format(reponse))
+                target.write("\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
         finally:
@@ -130,10 +243,96 @@ class Traces:
         """
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
-                target.write("Joueur : {} , réponse : {} namePlayer".format(namePlayer, answer))
+                target.write("[SIMPLE] Joueur : {} , réponse : {}".format(namePlayer, answer))
                 target.write("\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
         finally:
             target.close()
         return
+
+    def saveTraceQuestionsImage(self, numQuestion, answer):
+        """ Méthode de sauvegarde des questions de la partie
+                YYYY-MM-DD_HH:MM:SS_name
+
+                Parameters
+                ---------
+                :param numQuestion : int
+                    numéro de la question en cours
+                :param answer : [str]
+                    réponse de la question
+
+        """
+        try:
+            answer = tempName = os.path.splitext(answer)
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("# --- [Question {}] ---#\n".format(numQuestion + 1))
+                target.write("# --- Réponse(s): {} ---#\n".format(answer[0]))
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def saveTracePoints(self, pointsT1, pointsT2):
+        """ Méthode de sauvegarde des questions de la partie
+                YYYY-MM-DD_HH:MM:SS_name
+
+                Parameters
+                ---------
+                :param pointsT1 : int
+                    points de l'equipe 1
+                :param pointsT2 : int
+                    points de l'equipe 1
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# --- [TEAM 1] points: {} ---#\n".format(pointsT1))
+                target.write("# --- [TEAM 2] points: {} ---#\n".format(pointsT2))
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def saveTracePointsEachPlayer(self, tabPlayerDiscriminator):
+        """ Méthode de sauvegarde des questions de la partie
+                YYYY-MM-DD_HH:MM:SS_name
+
+                Parameters
+                ---------
+                :param tabPlayerDiscriminator : [array]
+                    tableau des joueurs avec leurs discriminants
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                for player in tabPlayerDiscriminator:
+                    target.write("# --- Joueur:  {} points: {} ---#\n".format(player[0], player[1]))
+                target.write("\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def traceEndGame(self):
+        """ Méthode d'annone que l'on est sur la partie quiz des questions
+              YYYY-MM-DD_HH:MM:SS_name
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# ---*** [FIN DE PARTIE] ***---#\n")
+                target.write("\n\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+

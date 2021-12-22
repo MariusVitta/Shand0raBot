@@ -135,6 +135,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
         if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
             return False
 
+        trace.saveTraceAnswer(m.author.name, m.content)
         # 1)
         def contains_word(userAnswer, toGuess):
             return (' ' + userAnswer + ' ') in (' ' + toGuess + ' ')
@@ -179,7 +180,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 random.shuffle(files)
                 file = files[0]
         imagesVues.append(file)
-
+        trace.traceQuestionsImage(numQuestion, file)
         """dossier = "One Piece"
         file = "Rob_Lucci.png"""
 
@@ -354,8 +355,10 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                     await calculPoints(boutons.dataV[1], tabPlayerDiscriminator)
                     await printEmbedBonneReponse(rep, boutons.dataV[1].display_name, pointsTeam1, pointsTeam2, valTeam1,
                                                  valTeam2)
+                    trace.saveTraceBoutons(boutons.dataV[1].display_name,rep)
                 elif not boutons.dataV[0]:
                     await printEmbedNoAnswer(rep)
+                    trace.traceTimeoutBoutons(rep)
             numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
             boutons.dataV = []
             boutons.tentative = []
@@ -376,10 +379,11 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                         reponse = tabRep
                         await printEmbedTimeout(reponse)
                         numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
-
+                        trace.traceTimeout()
                         break
                     else:  # affichage de l'indice
-                        await printClue(tabRep)
+                        indice = await printClue(tabRep)
+                        trace.saveTraceIndice(indice)
 
                 # sinon on met à jour les points de l'equipe qui a marqué un point,
                 # on affiche l'auteur du bon message dans un
@@ -462,10 +466,14 @@ async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator, traceGame):
     await asyncio.sleep(delaiDebutPartie)
     trace.traceQuestionQuiz()
     await jeu(0, tabPlayerDiscriminator)
+    trace.traceFinQuestionQuiz()
     trace.traceQuestionImage()
     await jeuImage(1, tabPlayerDiscriminator)
+    trace.traceFinQuestionImage()
 
     await printWinners(pointsTeam1, pointsTeam2)
+    trace.saveTracePoints()
+
     sauvegardeScore(tabPlayerDiscriminator)
     pointsTeam1 = 0
     pointsTeam2 = 0

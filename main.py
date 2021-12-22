@@ -1,3 +1,5 @@
+import sys
+
 from games import *
 from logs import *
 from traces import *
@@ -313,8 +315,10 @@ async def stop(ctx):
             color=discord.Color.from_rgb(19, 19, 19)
         )
         await ctx.channel.send(embed=embed)
-        #client.clear()
-        #await client.run(TOKEN)
+
+        quit()
+        await client.login(TOKEN)
+
         #await client.connect(reconnect=True)
     else:
         embed = discord.Embed(
@@ -372,6 +376,7 @@ async def removeRoles(ctx, players: list):
             await member.remove_roles(roleTeam1, roleTeam2, reason=None, atomic=True)
 
 client.run(TOKEN)
+client.change_presence(game=discord.Game(name='my game'))
 
 #if __name__ == '__main__':
     # while True:
