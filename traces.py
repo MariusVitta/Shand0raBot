@@ -3,8 +3,21 @@ from datetime import datetime
 
 
 class Traces:
+    """
+        Classe qui nous sert à sauvegarder toutes les parties lancées dans un fichier
+        au format .txt, afin d'avoir une trace sur l'ensemble des parties
 
+        Attributes
+        ----------
+        dossier : str
+            dossier de sauvegarde de toutes les parties
+        nomFichier : str
+            dossier du fichier de la partie YYYY-MM-DD_HH-MM-SS_name
+    """
     def __init__(self):
+        """ Constructeur de classe
+            création d'une instance"""
+
         self.dossier = "Parties"
         if not os.path.exists(self.dossier):
             os.makedirs(self.dossier, mode=0o777, exist_ok=False)  # création de trace dossier s'il n'existe pas encore
@@ -12,17 +25,17 @@ class Traces:
         self.nomFichier = ""
 
     def createFile(self, name):
-        """ Méthode de création du fichier de trâce du jeu, le format du nom du fichier sera donc
+        """ Méthode de création du fichier de trace du jeu, le format du nom du fichier sera donc
             YYYY-MM-DD_HH-MM-SS_name
 
             Parameters
             ---------
-            :param name : str
+            name : str
                 nom de celui qui a lancé la partie
         """
         now = datetime.now()
 
-        # YYYY-MM-DD H:M:S
+        # YYYY-MM-DD_H-M-S
         dt_string = now.strftime("%Y-%m-%d_%H-%M-%S")
         self.nomFichier = dt_string + "_" + name
         try:
@@ -35,13 +48,12 @@ class Traces:
             target.close()
         return
 
-    def numberPlayer(self, tabPlayer: [str]):
-        """ Méthode de sauvegarde des joueurs de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+    def numberPlayer(self, tabJoueur: [str]):
+        """ Méthode de sauvegarde des joueurs de la partie YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
-                :param tabPlayer : [str]
+                tabJoueur : [str]
                     tableau contenant le nom des joueurs
         """
         try:
@@ -49,10 +61,10 @@ class Traces:
                 target.write("# --- JOUEURS ---#\n")
                 target.write("# --- [EQUIPE 1] ---#\n")
                 for playerTeam1 in range(len(tabPlayer[0])):
-                    target.write("#{0} - {1}\n".format(playerTeam1 + 1, tabPlayer[0][playerTeam1]))
+                    target.write("#{0} - {1}\n".format(playerTeam1 + 1, tabJoueur[0][playerTeam1]))
                 target.write("# --- [EQUIPE 2] ---#\n")
                 for playerTeam2 in range(len(tabPlayer[1])):
-                    target.write("#{0} - {1}\n".format(playerTeam2 + 1, tabPlayer[1][playerTeam2]))
+                    target.write("#{0} - {1}\n".format(playerTeam2 + 1, tabJoueur[1][playerTeam2]))
                 target.write("\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
@@ -61,10 +73,7 @@ class Traces:
         return
 
     def traceQuestionQuiz(self):
-        """ Méthode d'annone que l'on est sur la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
-
-        """
+        """ Méthode d'annonce que l'on est sur la partie quiz des questions"""
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("\n")
@@ -77,10 +86,7 @@ class Traces:
         return
 
     def traceFinQuestionQuiz(self):
-        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
-
-        """
+        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions"""
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("\n")
@@ -93,10 +99,7 @@ class Traces:
         return
 
     def traceTimeout(self):
-        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
-
-        """
+        """ Méthode d'annonce que personne a donné la bonne réponse dans le temps imparti"""
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("\n")
@@ -109,12 +112,11 @@ class Traces:
         return
 
     def saveTraceIndice(self, indice):
-        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde de l'indice donne
 
             Parameters
             ---------
-            :param indice : str
+            indice : str
                 indice de la réponse actuelle
 
         """
@@ -130,10 +132,7 @@ class Traces:
         return
 
     def traceQuestionImage(self):
-        """ Méthode d'annone que l'on est sur la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
-
-        """
+        """ Méthode de sauvagarde du nom de l'image sur la partie Image"""
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("\n# ---*** [IMAGES] ***---#\n")
@@ -145,10 +144,7 @@ class Traces:
         return
 
     def traceFinQuestionImage(self):
-        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
-
-        """
+        """ Méthode d'annonce que l'on est sur la fin de la partie Image"""
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("\n")
@@ -161,18 +157,17 @@ class Traces:
         return
 
     def saveTraceQuestions(self, numQuestion, question, answer, typeQuestion):
-        """ Méthode de sauvegarde des questions de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des questions de la partie YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
-                :param numQuestion : int
+                numQuestion : int
                     numéro de la question en cours
-                :param question : str
+                question : str
                     question
-                :param answer : [str]
+                answer : [str]
                     réponse de la question
-                :param typeQuestion : int
+                typeQuestion : str
                     type de question
         """
         try:
@@ -188,14 +183,13 @@ class Traces:
         return
 
     def saveTraceBoutons(self, namePlayer, answer):
-        """ Méthode de sauvegarde des questions de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des questions (boutons) de la partie YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
-                :param namePlayer : str
+                namePlayer : str
                     nom du joueur qui a donné la bonne réponse
-                :param answer : [str]
+                answer : [str]
                     réponse de la question
 
         """
@@ -210,12 +204,11 @@ class Traces:
         return
 
     def traceTimeoutBoutons(self, reponse):
-        """ Méthode d'annonce que l'on est sur la fin de la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode d'annonce que personne a donné la bonne réponse dans le temps imparti pour une question à choix multiple
 
             Parameters
             ----------
-            :param reponse: str
+            reponse : str
                 bonne réponse
         """
         try:
@@ -231,14 +224,13 @@ class Traces:
         return
 
     def saveTraceAnswer(self, namePlayer, answer):
-        """ Méthode de sauvegarde des questions de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des réponses de la partie YYYY-MM-DD_HH:MM:SS_name
 
             Parameters
             ---------
-            :param namePlayer : str
+            namePlayer : str
                 nom du joueur
-            :param answer : str
+            answer : str
                 réponse de la question
         """
         try:
@@ -252,19 +244,18 @@ class Traces:
         return
 
     def saveTraceQuestionsImage(self, numQuestion, answer):
-        """ Méthode de sauvegarde des questions de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des questions sur les images de la partie YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
-                :param numQuestion : int
+                numQuestion : int
                     numéro de la question en cours
-                :param answer : [str]
+                answer : [str]
                     réponse de la question
 
         """
         try:
-            answer = tempName = os.path.splitext(answer)
+            answer = os.path.splitext(answer)
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("# --- [Question {}] ---#\n".format(numQuestion + 1))
                 target.write("# --- Réponse(s): {} ---#\n".format(answer[0]))
@@ -275,14 +266,13 @@ class Traces:
         return
 
     def saveTracePoints(self, pointsT1, pointsT2):
-        """ Méthode de sauvegarde des questions de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des points de la partie YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
-                :param pointsT1 : int
+                pointsT1 : int
                     points de l'equipe 1
-                :param pointsT2 : int
+                pointsT2 : int
                     points de l'equipe 1
         """
         try:
@@ -298,12 +288,11 @@ class Traces:
         return
 
     def saveTracePointsEachPlayer(self, tabPlayerDiscriminator):
-        """ Méthode de sauvegarde des questions de la partie
-                YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des points de chaque joueurs de la partie  YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
-                :param tabPlayerDiscriminator : [array]
+                tabPlayerDiscriminator : [array]
                     tableau des joueurs avec leurs discriminants
 
         """
@@ -320,8 +309,7 @@ class Traces:
         return
 
     def traceEndGame(self):
-        """ Méthode d'annone que l'on est sur la partie quiz des questions
-              YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode d'annone que l'on est sur la fin de la partie  YYYY-MM-DD_HH:MM:SS_name
 
         """
         try:

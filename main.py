@@ -40,9 +40,7 @@ async def on_ready():
 
 
 async def choixNombreJoueurs():
-    """ Methode qui prend en compte le nombre de joueurs dans la partie
-
-    """
+    """ Methode qui prend en compte le nombre de joueurs dans la partie"""
     global nombreJoueurs
     embed = discord.Embed(
         title="Nombres de joueurs dans la partie ?",
@@ -100,7 +98,8 @@ async def start(self, message):
         description=descriptionDBV,
         color=colorEmbedWhiteDBV
     )
-    embed.set_footer(text="Session lancée par {}".format(self.message.author.display_name), icon_url=self.message.author.avatar)
+    embed.set_footer(text="Session lancée par {}".format(self.message.author.display_name),
+                     icon_url=self.message.author.avatar)
     choix = await channel.send(embed=embed, delete_after=30.0)
     # ---- trace ------
     trace.createFile(self.message.author.name)
@@ -172,10 +171,10 @@ async def on_raw_reaction_add(payload):
         guild = member.guild
         emoji = payload.emoji.name
         # récuperation du role à assigner à l'utilisateur
-        if emoji == tabEmoji[0]:
-            role = discord.utils.get(guild.roles, name=tabRole[0])
-        elif emoji == tabEmoji[1]:
-            role = discord.utils.get(guild.roles, name=tabRole[1])
+        if emoji == tabEmoji[indiceEquipe1]:
+            role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
+        elif emoji == tabEmoji[indiceEquipe2]:
+            role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe2])
 
         # On va recuperer l'ancien role du joueur (s'il existe)
         ancienRole = diff([role.name], tabRole)
@@ -225,9 +224,9 @@ async def on_raw_reaction_remove(payload):
 
         # récuperation du rôle
         if emoji == tabEmoji[0]:
-            role = discord.utils.get(guild.roles, name=tabRole[0])
+            role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
         elif emoji == tabEmoji[1]:
-            role = discord.utils.get(guild.roles, name=tabRole[1])
+            role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe2])
         member = await(guild.fetch_member(payload.user_id))
 
         if member is not None:
@@ -272,12 +271,34 @@ async def attente_joueur(payload):
         await reactionEquipe1.clear()
         await reactionEquipe2.clear()
         if not partieEnCours:
-
             # ---- trace ------
             trace.numberPlayer(tabPlayer)
             partieEnCours = True
             partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
         await removeRoles(payload, tabPlayer)
+
+
+async def removeRoles(ctx, players: list):
+    """ Methode de retrait des rôles de jeux des joueurs.
+
+        Parameters
+        ----------
+        ctx : Context
+            Context d'execution
+        players : list
+            tableau contenant des noms des joueurs
+    """
+    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+    roleTeam1 = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
+    roleTeam2 = discord.utils.get(guild.roles, name=tabRole[indiceEquipe2])
+
+    for member in guild.members:
+        if member.bot:
+            pass
+        elif roleTeam1 not in member.roles and roleTeam2 not in member.roles:
+            pass
+        elif member is not None and member.name not in players:
+            await member.remove_roles(roleTeam1, roleTeam2, reason=None, atomic=True)
 
 
 @client.event
@@ -319,7 +340,6 @@ async def stop(ctx):
         quit()
         await client.login(TOKEN)
 
-        #await client.connect(reconnect=True)
     else:
         embed = discord.Embed(
             title="Aucune partie est en cours !",
@@ -327,57 +347,7 @@ async def stop(ctx):
         )
         await ctx.channel.send(embed=embed)
 
-@client.command()
-async def match(self, *, message):
-    chaineADeviner = "Kurapika".lower()
-    split = message.lower().split(" ")
-    if jellyfish.damerau_levenshtein_distance(chaineADeviner, message.lower()) <= 1:  # on regarde les changements de position des lettres
-        await self.channel.send("bonne réponse")
-    elif jellyfish.levenshtein_distance(chaineADeviner, message.lower()) <= 1:  # puis on regarde le changement de lettre
-        await self.channel.send("bonne réponse à quelques lettres pret")
-    return
-    for m in split:
-        if jellyfish.damerau_levenshtein_distance(chaineADeviner, m) <= 1:  # on regarde les changements de position des lettres
-            await self.channel.send("bonne réponse")
-        elif jellyfish.levenshtein_distance(chaineADeviner, m) <= 2:  # puis on regarde le changement de lettre
-            await self.channel.send("bonne réponse à quelques lettres pret")
-
-
-    return
-    moitie = len(chaineADeviner) / 2 + 1
-    print(chaineADeviner[0:int(moitie)])
-    if message.lower().startswith(chaineADeviner[0:int(moitie)].lower()):
-        await self.channel.send(
-            "Bien joué, la chaine à deviner était:" + chaineADeviner + "\n votre réponse: " + message)
-    else:
-        await self.channel.send("Vous n'êtes pas loin de la réponse !")
-    return
-
-async def removeRoles(ctx, players: list):
-    """ Methode de retrait des rôles de jeux des joueurs.
-
-         Parameters
-         ----------
-         :param ctx : Context
-             Context d'execution
-        :param players : [str]
-            tableau contenant des noms des joueurs
-    """
-    guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
-    roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
-    roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
-
-    for member in guild.members:
-        if member.bot:
-            pass
-        elif roleTeam1 not in member.roles and roleTeam2 not in member.roles:
-            pass
-        elif member is not None and member.name not in players:
-            await member.remove_roles(roleTeam1, roleTeam2, reason=None, atomic=True)
 
 client.run(TOKEN)
-client.change_presence(game=discord.Game(name='my game'))
 
-#if __name__ == '__main__':
-    # while True:
 

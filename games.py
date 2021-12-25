@@ -9,9 +9,7 @@ GUILD = str(os.getenv('DISCORD_GUILD'))
 
 
 async def initVar():
-    """ Méthode d'initialisation des variables globales.
-
-    """
+    """ Méthode d'initialisation des variables globales."""
     global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle, reponsesActuelles
     pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
     valTeam1, valTeam2 = "", ""
@@ -25,9 +23,9 @@ async def calculPoints(messageAuthor, tabJoueurDiscriminator: [str]):
 
         Parameters
         ----------
-        :param messageAuthor : Any
-            un tuple de plusieurs arguments sur l'auteur du message
-        :param tabJoueurDiscriminator : [str]
+        messageAuthor : Message
+            instance de Message
+        tabJoueurDiscriminator : [str]
             tableau des joueurs avec leurs discriminants, nous sert essentiellement pour sauvegarder les points des joueurs en fin de partie
     """
     global pointsTeam2, pointsTeam1, valTeam1, valTeam2, tabPlayerDiscriminator
@@ -55,11 +53,11 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
 
         Parameters
         ----------
-        :param fichier :str
+        fichier :str
             nom de l'image que l'on veut pixeliser
-        :param valeurResize :int
+        valeurResize :int
             taille du resize de l'image
-        :param dossier :str
+        dossier :str
             dossier ou se trouve l'image actuellement
     """
     img = Image.open(path + "/" + dossier + "/" + fichier)
@@ -74,9 +72,7 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
 
 
 def selectManga():
-    """ Methode de selectin d'un manga dans la liste des mangas disponibles
-
-    """
+    """ Methode de selectin d'un manga dans la liste des mangas disponibles"""
     mangas = listeMangas
     # Random number with system time
     random.seed(datetime.now())
@@ -89,9 +85,9 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
 
         Parameters
         ----------
-        :param numJeu : int
+        numJeu : int
             Numéro du jeu actuel
-        :param tabJDiscriminator : [str]
+        tabJDiscriminator : [str]
             tableaux des joueurs avec leurs discriminants
     """
     global numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2, channel, tabPlayerDiscriminator
@@ -117,13 +113,16 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 - Sentomaur au lieu de Sentomaru ✅ Validé, car dépasse 7 caractères
 
             3) dans tous les autres cas on retourne False
+
             Parameters
             ----------
-            :param m tuple de plusieurs arguments sur le message
+            m : Message
+                instance de Message
 
             Returns
             -------
-            :return bool True si la réponse donnée est bonne et si le message a été envoyé dans le bon salon
+            bool
+                True si la réponse donnée est bonne et si le message a été envoyé dans le bon salon
         """
         guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
@@ -136,12 +135,13 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
             return False
 
         trace.saveTraceAnswer(m.author.name, m.content)
+
         # 1)
         def contains_word(userAnswer, toGuess):
             return (' ' + userAnswer + ' ') in (' ' + toGuess + ' ')
 
         for rep in tabBonnesReponse:
-            if "_" in rep:
+            if "_" in rep: # on va différencier les réponses ou un ensemble de mot ne peuvent pas être séparé des autres
                 rep = rep.replace("_", " ").lower()
                 if contains_word(rep.lower(), m.content.lower()):
                     return True
@@ -150,17 +150,6 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                     if word.lower() in rep.lower():
                         return True
         return False
-        # si le mot fait plus de caractères on va chercher à avoir le nombre de lettres mal placé/mauvaises lettres
-        """if len(m.content) > 7:
-            for reps in tabBonnesReponse:
-                if jellyfish.damerau_levenshtein_distance(m.content.lower(),
-                                                          reps.lower()) <= 1:  # on regarde les changements de position des lettres
-                    return True
-                elif jellyfish.levenshtein_distance(m.content.lower(),
-                                                    reps.lower()) <= 1:  # puis on regarde le changement de lettre
-                    return True
-            return False"""
-
 
     for numQuestion in range(nbQuestions):
 
@@ -181,12 +170,10 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 file = files[0]
         imagesVues.append(file)
         trace.traceQuestionsImage(numQuestion, file)
-        """dossier = "One Piece"
-        file = "Rob_Lucci.png"""
 
         # pixelisation de l'image
         traitementImage(file, tabTailleResize[0], dossier)
-        await printEmbedImage(file, numJeu, numQuestion, dossier)
+        await printEmbedImage(file, dossier)
 
         # récuperation du bon nom de l'image
         tabBonnesReponse = traitementNom(file)
@@ -200,7 +187,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
             except asyncio.TimeoutError:
                 if valeurResize != tabTailleResize[-1]:
                     traitementImage(file, valeurResize, dossier)
-                    await printEmbedImage(file, numJeu, numQuestion, dossier)
+                    await printEmbedImage(file, dossier)
                 else:  # on est arrivé au bout du tableau et on affiche la bonne réponse
                     reponse = tabBonnesReponse
                     await printEmbedTimeoutImage(file, reponse, dossier)
@@ -226,9 +213,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
 
 
 def selectQuestion():
-    """ Methode de selection d'un manga dans la liste des mangas disponibles
-
-    """
+    """ Methode de selection d'un manga dans la liste des mangas disponibles """
     with open('One Piece.txt', 'r', encoding="utf-8") as source:
         data = [line for line in source]
     random.seed(datetime.now())
@@ -252,9 +237,9 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
         Parameters
         ----------
-        :param numJeu : int
+        numJeu : int
             Numéro du jeu actuel
-        :param tabJoueurDiscriminator : list
+        tabJoueurDiscriminator : list
             tableau des joueurs avec leurs discriminants
     """
     global contexteExecution, numeroJeu, channel, questionActuelle, reponsesActuelles, tabPlayerDiscriminator
@@ -277,11 +262,13 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
             Parameters
             ----------
-            :param m tuple de plusieurs arguments sur le message
+            m : Message
+                instance de Message
 
             Returns
             -------
-            :return bool True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
+            bool
+                True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
         """
         guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
@@ -299,8 +286,8 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
         reponses = getReponses()
         tableauReps = reponses.split("/")
-        for rep in tableauReps:
-            if contains_word(rep.lower(), m.content.lower()):  # contains_word(m.content.lower(), rep.lower()):  # # or
+        for bonneReponse in tableauReps:
+            if contains_word(bonneReponse.lower(), m.content.lower()):
                 return True
 
         # 2)
@@ -313,8 +300,6 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                                                     reps.lower()) <= 1:  # puis on regarde le changement de lettre
                     return True
             return False
-        #else:
-         #   return m.content.lower() in [y.lower() for y in tableauReps]
 
     for numQuestion in range(nbQuestions * 2):
 
@@ -333,6 +318,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
         questionsVues.append(question)
         questionActuelle = question
         reponsesActuelles = tabRep
+
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         #
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
@@ -341,7 +327,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 title="🔸 " + questionActuelle,
                 color=colorEmbedWhiteDBV
             )
-            rep = data[3].rstrip("\n")
+            rep = data[indiceBonneReponse].rstrip("\n")
             msgv = await contexteExecution.send(embed=embed)
             await asyncio.sleep(delaiDebutPartie)
             # dataV = []
@@ -355,7 +341,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                     await calculPoints(boutons.dataV[1], tabPlayerDiscriminator)
                     await printEmbedBonneReponse(rep, boutons.dataV[1].display_name, pointsTeam1, pointsTeam2, valTeam1,
                                                  valTeam2)
-                    trace.saveTraceBoutons(boutons.dataV[1].display_name,rep)
+                    trace.saveTraceBoutons(boutons.dataV[1].display_name, rep)
                 elif not boutons.dataV[0]:
                     await printEmbedNoAnswer(rep)
                     trace.traceTimeoutBoutons(rep)
@@ -365,7 +351,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
             pass
 
         else:
-            await printEmbedQuestions(questionActuelle, numQuestion, numJeu)
+            await printEmbedQuestions(questionActuelle)
             await asyncio.sleep(delaiDebutPartie)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
@@ -400,12 +386,12 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
     return
 
 
-def sauvegardeScore(tabJDiscriminator: [str]):
+def sauvegardeScore(tabJDiscriminator: list):
     """ Methode de sauvegarde du score des joueurs.
 
            Parameters
            ----------
-           :param tabJDiscriminator : [array]
+           tabJDiscriminator : list
                tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
 
     """
@@ -436,23 +422,25 @@ def sauvegardeScore(tabJDiscriminator: [str]):
     pass
 
 
-async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator, traceGame):
+async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGame):
     """ Methode de lancement du jeu.
         Initialise les variables et lance l'ensemble des jeux
 
         Parameters
         ----------
-        :param tabJoueur : [str]
+        tabJoueur : list
             tableau de string contenant le nom de l'ensemble des joueurs
-        :param ctx : Context
+        ctx : Context
             contexte d'execution, nous sert principalement afin d'afficher les messages avec des boutons
-        :param tabJoueurDiscriminator : [str]
+        tabJoueurDiscriminator : list
             tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
-        :param traceGame : Traces
+        traceGame : Traces
             instance de la classe Traces qui nous permettra de sauvegarder l'ensemble des parties dans un fichier de trace
+
         Returns
         ------
-        :return bool fin de partie
+        bool
+            booleen représentant la fin de partie
     """
     global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution, channel, tabPlayerDiscriminator, trace
     await initVar()
@@ -460,23 +448,32 @@ async def lancerJeux(tabJoueur, ctx, tabJoueurDiscriminator, traceGame):
     contexteExecution = ctx
     tabPlayerDiscriminator = tabJoueurDiscriminator
     trace = traceGame
+
     await printPlayer(tabPlayer)
     await asyncio.sleep(delaiDebutPartie)
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartie)
+
+    # quiz
     trace.traceQuestionQuiz()
     await jeu(0, tabPlayerDiscriminator)
     trace.traceFinQuestionQuiz()
+
+    # "qui est-ce"
     trace.traceQuestionImage()
     await jeuImage(1, tabPlayerDiscriminator)
     trace.traceFinQuestionImage()
 
+    # affichage des vainqueurs
     await printWinners(pointsTeam1, pointsTeam2)
-    trace.saveTracePoints()
 
+    # Sauvegarde des points
+    trace.saveTracePoints()
     sauvegardeScore(tabPlayerDiscriminator)
+
+    # reset
     pointsTeam1 = 0
     pointsTeam2 = 0
-
     partieEnCours = False
+
     return partieEnCours
