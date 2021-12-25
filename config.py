@@ -3,14 +3,13 @@ from imports import *
 
 global tabPlayer, contexteExecution
 
-
 # ------------------------------------------------------------------------------------------------------------#
 # Gestion des commandes du bot
 descriptionBot = "Bot pour le Davy Back Fight"
 prefixBot = '!'
 messageStart = 'dbf'
 usageBot = "Usage: {}start {} or {}s {}".format(prefixBot, messageStart, prefixBot, messageStart)
-intents = discord.Intents().default()
+intents = discord.Intents().all()
 
 # CLIENT
 client = commands.Bot(command_prefix=prefixBot, description=descriptionBot, intents=intents)
@@ -31,18 +30,17 @@ tabPlayer = [[], []]  # tableau des joueurs
 nombreJoueursEquipe1 = 1
 nombreJoueursEquipe2 = 2
 
-
 # ------------------------------------------------------------------------------------------------------------#
 # MESSAGES DAVYBACKFIGHT
 
 titreDBV = "🎮 Davy Back Fight"
-descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n 🔸 Pour rejoindre une équipe réagis à l'un des émojis \n\n ▫️ {} {} \n\n ▫️ {} {}\n‏".format(tabEmoji[indiceEquipe1], tabRole[indiceEquipe1], tabEmoji[indiceEquipe2], tabRole[indiceEquipe2])
+descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n 🔸 Pour rejoindre une équipe réagis à l'un des émojis \n\n ▫️ {} {} \n\n ▫️ {} {}\n‏".format(
+    tabEmoji[indiceEquipe1], tabRole[indiceEquipe1], tabEmoji[indiceEquipe2], tabRole[indiceEquipe2])
 colorEmbedWhiteDBV = discord.Color.from_rgb(255, 255, 255)
 debutPartieDBV = "🔹 La première épreuve va commencer\n\n"
 tabTextEpreuve = ["🔹 **Epreuve 1 / 3**", "🔹 **Epreuve 2 / 3**", "🔹 **Epreuve 3 / 3** "]
 carreBlanc = "▫️"
 tabEpreuves = ["Epreuve 1", "Epreuve 2", "Epreuve 3"]
-
 
 # ------------------------------------------------------------------------------------------------------------#
 # QUESTIONS
@@ -78,7 +76,7 @@ colorEmbedGoodAnswer = discord.Color.from_rgb(120, 177, 89)
 # ----- INDICES -----
 nombreTentatives = 2  # nombre de fois que le bot va attendre avant d'envoyer la bonne réponse (envoie un incide à `nombreTentatives`\2`)
 
-nbQuestions = 7 # nombre de questions pour l'épreuve 1
+nbQuestions = 7  # nombre de questions pour l'épreuve 1
 
 # ------------------------------------------------------------------------------------------------------------#
 # GESTIONS DU DELAI
@@ -94,6 +92,5 @@ delaiReponse = 5
 # GESTION DES IMAGES
 path = 'images'
 pathFlou = 'imagesFloues'
-tabTailleResize = [8, 12, 16, 200]  # résolution des images pour les pixeliser, le '200' correspond à l'image non pixelisée
-
-
+tabTailleResize = [8, 12, 16,
+                   200]  # résolution des images pour les pixeliser, le '200' correspond à l'image non pixelisée

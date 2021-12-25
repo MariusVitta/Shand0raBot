@@ -60,10 +60,10 @@ class Traces:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("# --- JOUEURS ---#\n")
                 target.write("# --- [EQUIPE 1] ---#\n")
-                for playerTeam1 in range(len(tabPlayer[0])):
+                for playerTeam1 in range(len(tabJoueur[0])):
                     target.write("#{0} - {1}\n".format(playerTeam1 + 1, tabJoueur[0][playerTeam1]))
                 target.write("# --- [EQUIPE 2] ---#\n")
-                for playerTeam2 in range(len(tabPlayer[1])):
+                for playerTeam2 in range(len(tabJoueur[1])):
                     target.write("#{0} - {1}\n".format(playerTeam2 + 1, tabJoueur[1][playerTeam2]))
                 target.write("\n")
         except FileNotFoundError:

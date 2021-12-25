@@ -7,7 +7,7 @@ from traces import *
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = str(os.getenv('DISCORD_GUILD'))
+GUILD = os.getenv('DISCORD_GUILD')
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
@@ -260,14 +260,13 @@ async def attente_joueur(payload):
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users(limit=nombreJoueursEquipe1):
             if not user.bot:
-                tabPlayer[0].append(guild.get_member(user.id).display_name)
+                tabPlayer[indiceEquipe1].append(guild.get_member(user.id).display_name)
                 tabPlayerDiscriminator.append(
                     [guild.get_member(user.id).name + "#" + guild.get_member(user.id).discriminator, 0])
         async for user in reactionEquipe2.users(limit=nombreJoueursEquipe2):
             if not user.bot:
-                tabPlayer[1].append(guild.get_member(user.id).display_name)
-                tabPlayerDiscriminator.append(
-                    [guild.get_member(user.id).name + "#" + guild.get_member(user.id).discriminator, 0])
+                tabPlayer[indiceEquipe2].append(guild.get_member(user.id).display_name)
+                tabPlayerDiscriminator.append([user.display_name + "#" + user.discriminator, 0])
         await reactionEquipe1.clear()
         await reactionEquipe2.clear()
         if not partieEnCours:
@@ -289,7 +288,6 @@ async def removeRoles(ctx, players: list):
             tableau contenant des noms des joueurs
     """
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
-    print(guild)
     roleTeam1 = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
     roleTeam2 = discord.utils.get(guild.roles, name=tabRole[indiceEquipe2])
 
