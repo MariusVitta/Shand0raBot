@@ -4,7 +4,7 @@ from games import *
 from logs import *
 from traces import *
 
-load_dotenv()
+#load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = str(os.getenv('DISCORD_GUILD'))
@@ -349,5 +349,3 @@ async def stop(ctx):
 
 
 client.run(TOKEN)
-
-

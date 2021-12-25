@@ -269,6 +269,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
             -------
             bool
                 True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
+                True si la réponse donnée est bonne et si le message a été envoye dans le bon salon
         """
         guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
