@@ -4,7 +4,7 @@ from games import *
 from logs import *
 from traces import *
 
-#load_dotenv()
+load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = str(os.getenv('DISCORD_GUILD'))
@@ -289,6 +289,7 @@ async def removeRoles(ctx, players: list):
             tableau contenant des noms des joueurs
     """
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+    print(guild)
     roleTeam1 = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
     roleTeam2 = discord.utils.get(guild.roles, name=tabRole[indiceEquipe2])
 
