@@ -208,7 +208,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                     await nextQuestion()
                 break
 
-    await nextEpreuve(nomEpreuve3)
+    #await nextEpreuve(nomEpreuve3)
     return
 
 

@@ -131,7 +131,7 @@ async def start(self, message):
     )
     embed.set_footer(text="Session lancée par {}".format(self.message.author.display_name),
                      icon_url=self.message.author.avatar)
-    choix = await channel.send(embed=embed, delete_after=30.0)
+    choix = await channel.send(embed=embed)
     # ---- trace ------
     trace.createFile(self.message.author.name)
 
