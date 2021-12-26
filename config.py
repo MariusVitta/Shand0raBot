@@ -34,7 +34,7 @@ nombreJoueursEquipe2 = 2
 # MESSAGES DAVYBACKFIGHT
 
 titreDBV = "🎮 Davy Back Fight"
-descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n 🔸 Pour rejoindre une équipe réagis à l'un des émojis \n\n ▫️ {} {} \n\n ▫️ {} {}\n‏".format(
+descriptionDBV = "🔹 La partie va débuter dans 30 secondes... \n\n🔸 Pour rejoindre une équipe réagis à l'un des émojis \n\n ▫️ {} {} \n\n ▫️ {} {}\n‏".format(
     tabEmoji[indiceEquipe1], tabRole[indiceEquipe1], tabEmoji[indiceEquipe2], tabRole[indiceEquipe2])
 colorEmbedWhiteDBV = discord.Color.from_rgb(255, 255, 255)
 debutPartieDBV = "🔹 La première épreuve va commencer\n\n"

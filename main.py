@@ -39,16 +39,46 @@ async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
 
 
-async def choixNombreJoueurs():
-    """ Methode qui prend en compte le nombre de joueurs dans la partie"""
-    global nombreJoueurs
+async def choixNombreJoueurs(user):
+    """ Methode qui prend en compte le nombre de joueurs dans la partie
+
+        Parameters
+        ----------
+        user : abc.User
+            instance de User
+    """
+
+    def check(reaction, utilisateur):
+        """ Fonction de verification
+           on va permettre seulement à celui qui à lance la méthode de choisir le nombre de joueurs
+
+            Parameters
+            ----------
+            reaction : Message
+                instance de Message
+            utilisateur : abc.User
+                instance de User
+       """
+        return utilisateur == user and str(reaction.emoji) in tabEmojiNbJoueurs
+
+    global nombreJoueurs, choixNbJoueurs, nbJoueursParEquipe
+    tabEmojiNbJoueurs = ["2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣"]
     embed = discord.Embed(
-        title="Nombres de joueurs dans la partie ?",
-        description=carreBlanc + " 2\n️️" + carreBlanc + " 3\n" + carreBlanc + " 4\n" + carreBlanc + " 5️️\n" + carreBlanc + " 6\n️️" + carreBlanc + " 7\n",
+        title="Nombre de joueurs par équipe ?",
+        description="{0} 2\n{0} 3\n{0} 4\n{0} 5\n{0} 6\n{0} 7\n".format(carreBlanc),
         color=colorEmbedWhiteDBV
     )
-    # message = await client.wait_for("reaction_add")
-    await client.get_channel(IDCHANNEL).send(embed=embed)
+    embed.set_footer(text="Seul {} peut choisir le nombre de joueurs".format(user.display_name), icon_url=user.avatar)
+    choix = await client.get_channel(IDCHANNEL).send(embed=embed)
+
+    choixNbJoueurs = True
+    # ajout des réactions au message du bot
+    for emoji in tabEmojiNbJoueurs:
+        await choix.add_reaction(emoji)
+
+    reaction, user = await client.wait_for("reaction_add", check=check)
+    index = tabEmojiNbJoueurs.index(reaction.emoji)
+    nbJoueursParEquipe = index + 3  # on rajoute 1 de plus, car le bot est pris en compte dans nos calculs
 
 
 @client.command(aliases=['s'])
@@ -92,7 +122,7 @@ async def start(self, message):
     # création de la trace pour cette partie
     trace = Traces()
     await removeRoles(self, [])
-    # await choixNombreJoueurs()
+    await choixNombreJoueurs(self.message.author)
     embed = discord.Embed(
         title=titreDBV,
         description=descriptionDBV,
@@ -165,7 +195,9 @@ async def on_raw_reaction_add(payload):
 
     if member.bot:
         return
-
+    # si on ajoute une réaction qui n'est pas attendu on va passer outre
+    if payload.emoji.name not in tabEmoji:
+        return
     # Verification sur le salon afin d'eviter de prendre en compte des réactions dans des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = member.guild
@@ -255,7 +287,7 @@ async def attente_joueur(payload):
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= nombreJoueursEquipe1 and reactionEquipe2.count >= nombreJoueursEquipe2):
+            reactionEquipe1.count >= nbJoueursParEquipe and reactionEquipe2.count >= nbJoueursParEquipe):
 
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users(limit=nombreJoueursEquipe1):
