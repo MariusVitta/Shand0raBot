@@ -22,7 +22,7 @@ async def printPlayer(tabJ: list):
     team2 = '\n'.join(["- `" + player + "`" for player in tabJ[indiceEquipe2]])
     embed = discord.Embed(
         title=titreDBV,
-        description="{}{}{}{}\n\n{}\n{}{}{}\n{}\n\n🔸 Question à choix multiple\n\n🔹 Question simple".format(
+        description="{}{}{} {}\n{}\n\n{}{} {}\n{}\n\n🔸 Question à choix multiple\n\n🔹 Question simple".format(
             debutPartieDBV, carreBlanc, tabEmoji[indiceEquipe1], tabRoleBold[
                 indiceEquipe1], team1, carreBlanc, tabEmoji[indiceEquipe2], tabRoleBold[indiceEquipe2], team2),
         color=colorEmbedWhiteDBV

@@ -1,4 +1,3 @@
-import sys
 import time
 
 from games import *
@@ -300,8 +299,9 @@ async def attente_joueur(payload):
                 tabPlayerDiscriminator.append([user.display_name + "#" + user.discriminator, 0])
         time.sleep(30)
         if reactionEquipe1.count >= minimumPlayer + 1 and reactionEquipe2.count >= minimumPlayer + 1:
-            await reactionEquipe1.clear()
-            await reactionEquipe2.clear()
+            # suppression du message afin d'eviter l'ajout de joueurs
+            msg = await channel.fetch_message(payload.message_id)
+            await delete_message(msg)
             if not partieEnCours:
                 # ---- trace ------
                 trace.numberPlayer(tabPlayer)
@@ -370,7 +370,13 @@ async def stop(ctx):
             color=discord.Color.from_rgb(19, 19, 19)
         )
         await ctx.channel.send(embed=embed)
-        await client.login(TOKEN)
+        trace.traceStopGame()
+        try:
+            await client.close()
+        except:
+            pass
+        finally:
+            os.system("py -u main.py")
     else:
         embed = discord.Embed(
             title="Aucune partie est en cours !",

@@ -288,7 +288,7 @@ class Traces:
         return
 
     def saveTracePointsEachPlayer(self, tabPlayerDiscriminator):
-        """ Méthode de sauvegarde des points de chaque joueurs de la partie  YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode de sauvegarde des points de chaque joueur de la partie  YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters
                 ---------
@@ -309,13 +309,28 @@ class Traces:
         return
 
     def traceEndGame(self):
-        """ Méthode d'annone que l'on est sur la fin de la partie  YYYY-MM-DD_HH:MM:SS_name
+        """ Méthode d'annonce que l'on est sur la fin de la partie  YYYY-MM-DD_HH:MM:SS_name
 
         """
         try:
             with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
                 target.write("\n")
                 target.write("# ---*** [FIN DE PARTIE] ***---#\n")
+                target.write("\n\n")
+        except FileNotFoundError:
+            print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
+        finally:
+            target.close()
+        return
+
+    def traceStopGame(self):
+        """ Méthode d'annone que l'on est sur la fin de la partie  YYYY-MM-DD_HH:MM:SS_name
+
+        """
+        try:
+            with open('{0}/{1}.txt'.format(self.dossier, self.nomFichier), 'a', encoding="utf-8") as target:
+                target.write("\n")
+                target.write("# ---*** [PARTIE STOPPEE] ***---#\n")
                 target.write("\n\n")
         except FileNotFoundError:
             print("Le dossier {} ou le fichier {} n'existe pas".format(self.dossier, self.nomFichier))
