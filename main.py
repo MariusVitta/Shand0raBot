@@ -1,4 +1,5 @@
 import sys
+import time
 
 from games import *
 from logs import *
@@ -64,11 +65,12 @@ async def choixNombreJoueurs(user):
     global nombreJoueurs, choixNbJoueurs, nbJoueursParEquipe
     tabEmojiNbJoueurs = ["2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣"]
     embed = discord.Embed(
-        title="Nombre de joueurs par équipe ?",
-        description="{0} 2\n{0} 3\n{0} 4\n{0} 5\n{0} 6\n{0} 7\n".format(carreBlanc),
+        title=titreDBV,
+        description="🔸 Choisissez le nombre de joueurs par équipe\n\n{0} 2{1}\n{0} 3{1}\n{0} 4{1}\n{0} 5{1}\n{0} 6{1}\n{0} 7{1}\n ‏".format(
+            carreBlanc, "👥"),
         color=colorEmbedWhiteDBV
     )
-    embed.set_footer(text="Seul {} peut choisir le nombre de joueurs".format(user.display_name), icon_url=user.avatar)
+    embed.set_footer(text="{} est entrain de choisir".format(user.display_name), icon_url=user.avatar)
     choix = await client.get_channel(IDCHANNEL).send(embed=embed)
 
     choixNbJoueurs = True
@@ -202,6 +204,7 @@ async def on_raw_reaction_add(payload):
     if payload.channel_id == IDCHANNEL:
         guild = member.guild
         emoji = payload.emoji.name
+        role = ""
         # récuperation du role à assigner à l'utilisateur
         if emoji == tabEmoji[indiceEquipe1]:
             role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
@@ -246,21 +249,17 @@ async def on_raw_reaction_remove(payload):
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
     """
-    global partieEnCours
-    if not partieEnCours:
-        return
     # Verification sur le salon afin d'eviter les traitements sur des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = await(client.fetch_guild(payload.guild_id))
         emoji = payload.emoji.name
-
+        role = None
         # récuperation du rôle
-        if emoji == tabEmoji[0]:
+        if emoji == tabEmoji[indiceEquipe1]:
             role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe1])
-        elif emoji == tabEmoji[1]:
+        elif emoji == tabEmoji[indiceEquipe2]:
             role = discord.utils.get(guild.roles, name=tabRole[indiceEquipe2])
         member = await(guild.fetch_member(payload.user_id))
-
         if member is not None:
             await member.remove_roles(role, reason=None, atomic=True)
         else:
@@ -277,7 +276,7 @@ async def attente_joueur(payload):
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
     """
-    global partieEnCours, stopCount
+    global partieEnCours
     tabPlayer = [[], []]
     tabPlayerDiscriminator = []
     channel = client.get_channel(IDCHANNEL)
@@ -287,26 +286,30 @@ async def attente_joueur(payload):
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= nbJoueursParEquipe and reactionEquipe2.count >= nbJoueursParEquipe):
+            reactionEquipe1.count >= minimumPlayer + 1 and reactionEquipe2.count >= minimumPlayer + 1):
 
         # récuperation de l'ensemble des joueurs
-        async for user in reactionEquipe1.users(limit=nombreJoueursEquipe1):
+        async for user in reactionEquipe1.users(limit=nbJoueursParEquipe):
             if not user.bot:
                 tabPlayer[indiceEquipe1].append(guild.get_member(user.id).display_name)
                 tabPlayerDiscriminator.append(
                     [guild.get_member(user.id).name + "#" + guild.get_member(user.id).discriminator, 0])
-        async for user in reactionEquipe2.users(limit=nombreJoueursEquipe2):
+        async for user in reactionEquipe2.users(limit=nbJoueursParEquipe):
             if not user.bot:
                 tabPlayer[indiceEquipe2].append(guild.get_member(user.id).display_name)
                 tabPlayerDiscriminator.append([user.display_name + "#" + user.discriminator, 0])
-        await reactionEquipe1.clear()
-        await reactionEquipe2.clear()
-        if not partieEnCours:
-            # ---- trace ------
-            trace.numberPlayer(tabPlayer)
-            partieEnCours = True
-            partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
-        await removeRoles(payload, tabPlayer)
+        time.sleep(30)
+        if reactionEquipe1.count >= minimumPlayer + 1 and reactionEquipe2.count >= minimumPlayer + 1:
+            await reactionEquipe1.clear()
+            await reactionEquipe2.clear()
+            if not partieEnCours:
+                # ---- trace ------
+                trace.numberPlayer(tabPlayer)
+                partieEnCours = True
+                partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
+            await removeRoles(payload, tabPlayer)
+        else:
+            return
 
 
 async def removeRoles(ctx, players: list):
@@ -367,10 +370,7 @@ async def stop(ctx):
             color=discord.Color.from_rgb(19, 19, 19)
         )
         await ctx.channel.send(embed=embed)
-
-        quit()
         await client.login(TOKEN)
-
     else:
         embed = discord.Embed(
             title="Aucune partie est en cours !",
