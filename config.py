@@ -8,7 +8,7 @@ global tabPlayer, contexteExecution
 descriptionBot = "Bot pour le Davy Back Fight"
 prefixBot = '!'
 messageStart = 'dbf'
-usageBot = "Usage: {}start {} or {}s {}".format(prefixBot, messageStart, prefixBot, messageStart)
+usageBot = "Usage: {0}start {1} {2} or {0}s {1} {2}".format(prefixBot, messageStart, "<nombre de joueurs>")
 intents = discord.Intents().all()
 
 # CLIENT
@@ -79,12 +79,15 @@ nbQuestions = 7  # nombre de questions pour l'épreuve 1
 # ------------------------------------------------------------------------------------------------------------#
 # GESTIONS DU DELAI
 delaiEntreEpreuves = 5
-delaiEntreQuestions = 5
+delaiEntreQuestions = 10
 delaiJoinMessage = 30
-delaiQuestions = 20
+delaiQuestions = 30
 delaiQuestionsImages = 40
-delaiDebutPartie = 3
+delaiDebutPartieTrois = 3
+delaiDebutPartieCinq = 5
 delaiReponse = 5
+delaiZeroCinq = 0.5
+
 
 # ------------------------------------------------------------------------------------------------------------#
 # GESTION DES IMAGES

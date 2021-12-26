@@ -39,51 +39,8 @@ async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
 
 
-async def choixNombreJoueurs(user):
-    """ Methode qui prend en compte le nombre de joueurs dans la partie
-
-        Parameters
-        ----------
-        user : abc.User
-            instance de User
-    """
-
-    def check(reaction, utilisateur):
-        """ Fonction de verification
-           on va permettre seulement à celui qui à lance la méthode de choisir le nombre de joueurs
-
-            Parameters
-            ----------
-            reaction : Message
-                instance de Message
-            utilisateur : abc.User
-                instance de User
-       """
-        return utilisateur == user and str(reaction.emoji) in tabEmojiNbJoueurs
-
-    global nombreJoueurs, choixNbJoueurs, nbJoueursParEquipe
-    tabEmojiNbJoueurs = ["2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣"]
-    embed = discord.Embed(
-        title=titreDBV,
-        description="🔸 Choisissez le nombre de joueurs par équipe\n\n{0} 2{1}\n{0} 3{1}\n{0} 4{1}\n{0} 5{1}\n{0} 6{1}\n{0} 7{1}\n ‏".format(
-            carreBlanc, "👥"),
-        color=colorEmbedWhiteDBV
-    )
-    embed.set_footer(text="{} est entrain de choisir".format(user.display_name), icon_url=user.avatar)
-    choix = await client.get_channel(IDCHANNEL).send(embed=embed)
-
-    choixNbJoueurs = True
-    # ajout des réactions au message du bot
-    for emoji in tabEmojiNbJoueurs:
-        await choix.add_reaction(emoji)
-
-    reaction, user = await client.wait_for("reaction_add", check=check)
-    index = tabEmojiNbJoueurs.index(reaction.emoji)
-    nbJoueursParEquipe = index + 3  # on rajoute 1 de plus, car le bot est pris en compte dans nos calculs
-
-
 @client.command(aliases=['s'])
-async def start(self, message):
+async def start(self, message, nbJ):
     """ Commande de lancement du bot.
         On vérifie si le salon de lancement du jeu est correct, si non on envoie un message
         On vérifie si une partie n'est pas déjà en cours, si oui on envoie un message d'erreur
@@ -94,8 +51,10 @@ async def start(self, message):
             contexte d'execution
         message : string
             message pour lancer le jeu voulu
+        nbJ : int
+            nombre de joueurs par équipe (entre 2 et 7)
     """
-    global contexteExecution, trace
+    global contexteExecution, trace, nbJoueursParEquipe
     contexteExecution = self
     message.lower()
     channel = self.channel
@@ -106,6 +65,11 @@ async def start(self, message):
             f"Je ne peux pas me lancer dans ce salon là :( \n ➡️ {client.get_channel(IDCHANNEL).mention}")
         return
 
+    if int(nbJ) < 2 or int(nbJ) > 7:
+        await channel.send(
+            f"Le nombre de joueurs par équipe doit être compris entre 2 et 7")
+        return
+    nbJoueursParEquipe = int(nbJ)
     # gestion de la partie en cours
     if partieEnCours:
         embed = discord.Embed(
@@ -123,10 +87,9 @@ async def start(self, message):
     # création de la trace pour cette partie
     trace = Traces()
     await removeRoles(self, [])
-    await choixNombreJoueurs(self.message.author)
     embed = discord.Embed(
         title=titreDBV,
-        description=descriptionDBV,
+        description=descriptionDBV + "\n{0} {1} {2} vs {2}\n‏".format(carreBlanc, "👥", int(nbJ)),
         color=colorEmbedWhiteDBV
     )
     embed.set_footer(text="Session lancée par {}".format(self.message.author.display_name),
@@ -174,7 +137,7 @@ async def restart(self):
             :param self :
                 contexte d'execution
     """
-    await start(self, messageStart)
+    await start(self, messageStart,nbJ=2)
     return
 
 
@@ -229,9 +192,10 @@ async def on_raw_reaction_add(payload):
             channel = client.get_channel(IDCHANNEL)
             message = await channel.fetch_message(payload.message_id)
             reaction0 = get(message.reactions, emoji=ancienEmoji[0])
-            async for user in reaction0.users():
-                if user == member:
-                    await reaction0.remove(user)
+            if reaction0 is not None:
+                async for user in reaction0.users():
+                    if user == member:
+                        await reaction0.remove(user)
         # sinon on lui ajoute le role simplement
         await member.add_roles(role)
 
@@ -285,28 +249,29 @@ async def attente_joueur(payload):
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= minimumPlayer + 1 and reactionEquipe2.count >= minimumPlayer + 1):
+            reactionEquipe1.count >= nbJoueursParEquipe + 1 and reactionEquipe2.count >= nbJoueursParEquipe + 1):
 
         # récuperation de l'ensemble des joueurs
-        async for user in reactionEquipe1.users(limit=nbJoueursParEquipe):
+        async for user in reactionEquipe1.users(limit=nbJoueursParEquipe + 1):
             if not user.bot:
                 tabPlayer[indiceEquipe1].append(guild.get_member(user.id).display_name)
                 tabPlayerDiscriminator.append(
-                    [guild.get_member(user.id).name + "#" + guild.get_member(user.id).discriminator, 0])
-        async for user in reactionEquipe2.users(limit=nbJoueursParEquipe):
+                    [user.display_name + "#" + user.discriminator, 0])
+        async for user in reactionEquipe2.users(limit=nbJoueursParEquipe + 1):
             if not user.bot:
                 tabPlayer[indiceEquipe2].append(guild.get_member(user.id).display_name)
                 tabPlayerDiscriminator.append([user.display_name + "#" + user.discriminator, 0])
-        time.sleep(30)
+        # suppression du message afin d'eviter l'ajout de joueurs
+        msg = await channel.fetch_message(payload.message_id)
+        await delete_message(msg)
+        """time.sleep(20)
         if reactionEquipe1.count >= minimumPlayer + 1 and reactionEquipe2.count >= minimumPlayer + 1:
-            # suppression du message afin d'eviter l'ajout de joueurs
-            msg = await channel.fetch_message(payload.message_id)
-            await delete_message(msg)
-            if not partieEnCours:
-                # ---- trace ------
-                trace.numberPlayer(tabPlayer)
-                partieEnCours = True
-                partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
+            """
+        if not partieEnCours:
+            # ---- trace ------
+            trace.numberPlayer(tabPlayer)
+            partieEnCours = True
+            partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
             await removeRoles(payload, tabPlayer)
         else:
             return

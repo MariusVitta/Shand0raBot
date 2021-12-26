@@ -147,7 +147,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                     return True
             else:
                 for word in m.content.split(" "):
-                    if word.lower() in rep.lower():
+                    if rep.lower() in word.lower():
                         return True
         return False
 
@@ -168,8 +168,10 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 random.seed(datetime.now())
                 random.shuffle(files)
                 file = files[0]
+        """dossier = "Hunter x Hunter"
+        file = "Knuckle_Bine-Knuckle.png"""
         imagesVues.append(file)
-        trace.traceQuestionsImage(numQuestion, file)
+        trace.saveTraceQuestionsImage(numQuestion, file)
 
         # pixelisation de l'image
         traitementImage(file, tabTailleResize[0], dossier)
@@ -246,6 +248,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
     numeroJeu = numJeu
     questionsVues = []
     tabPlayerDiscriminator = tabJoueurDiscriminator
+    reponse = ""
 
     def checkMessage(m):
         """Méthode de verification de la validité d'une réponse.
@@ -330,7 +333,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
             )
             rep = data[indiceBonneReponse].rstrip("\n")
             msgv = await contexteExecution.send(embed=embed)
-            await asyncio.sleep(delaiDebutPartie)
+            await asyncio.sleep(delaiZeroCinq)
             # dataV = []
             view = boutons.Quiz(tabRep.replace("\n", "").split("/"), rep, (len(tabPlayer[0]) + len(tabPlayer[1])))
             await msgv.edit(view=view)
@@ -353,7 +356,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
         else:
             await printEmbedQuestions(questionActuelle)
-            await asyncio.sleep(delaiDebutPartie)
+            await asyncio.sleep(delaiZeroCinq)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
                 try:
@@ -363,13 +366,13 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
                 except asyncio.TimeoutError:
                     if nbAffichage == nombreTentatives / 2:  # affichage de la bonne réponse
-                        reponse = tabRep
+                        # reponse = tabRep
                         await printEmbedTimeout(reponse)
                         numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
                         trace.traceTimeout()
                         break
                     else:  # affichage de l'indice
-                        indice = await printClue(tabRep)
+                        indice, reponse = await printClue(tabRep)
                         trace.saveTraceIndice(indice)
 
                 # sinon on met à jour les points de l'equipe qui a marqué un point,
@@ -381,6 +384,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                     await printEmbedBonneReponse(reponse, message.author.display_name, pointsTeam1, pointsTeam2,
                                                  valTeam1,
                                                  valTeam2)
+
                     numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
                     break
 
@@ -451,9 +455,10 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     trace = traceGame
 
     await printPlayer(tabPlayer)
-    await asyncio.sleep(delaiDebutPartie)
+    await asyncio.sleep(delaiDebutPartieCinq)
     await printEmbedDebutPartie()
-    await asyncio.sleep(delaiDebutPartie)
+    await asyncio.sleep(delaiDebutPartieCinq)
+    await printEmbedFirstQuestion()
 
     # quiz
     trace.traceQuestionQuiz()
@@ -469,7 +474,7 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     await printWinners(pointsTeam1, pointsTeam2)
 
     # Sauvegarde des points
-    trace.saveTracePoints()
+    trace.saveTracePoints(pointsTeam1,pointsTeam2)
     sauvegardeScore(tabPlayerDiscriminator)
 
     # reset

@@ -44,11 +44,11 @@ async def printWinners(pointsTeam1: int, pointsTeam2: int):
     """
     descriptionWinners = "🏆  Vainqueur\n\n"
     if pointsTeam2 > pointsTeam1:
-        vainqueurs = "{} `{} points`{}".format(foxyBoutonBlanc, pointsTeam2, medaillePremier)
-        perdants = "{} `{} points`{}".format(mugiBoutonBlanc, pointsTeam1, medailleSecond)
+        vainqueurs = "{} `{} points` {}".format(foxyBoutonBlanc, pointsTeam2, medaillePremier)
+        perdants = "{} `{} points` {}".format(mugiBoutonBlanc, pointsTeam1, medailleSecond)
     else:
-        vainqueurs = "{} `{} points`{}".format(mugiBoutonBlanc, pointsTeam1, medaillePremier)
-        perdants = "{} `{} points`{}".format(foxyBoutonBlanc, pointsTeam2, medailleSecond)
+        vainqueurs = "{} `{} points` {}".format(mugiBoutonBlanc, pointsTeam1, medaillePremier)
+        perdants = "{} `{} points` {}".format(foxyBoutonBlanc, pointsTeam2, medailleSecond)
 
     embed = discord.Embed(
         title=titreDBV,
@@ -110,7 +110,7 @@ async def nextQuestion():
     """ Methode d'attente entre 2 questions."""
     await asyncio.sleep(delaiEntreQuestions)
     await printEmbedNextQuestion()
-    await asyncio.sleep(delaiDebutPartie)
+    await asyncio.sleep(delaiDebutPartieCinq)
 
 
 async def nextEpreuve(nomEpreuve: str):
@@ -123,7 +123,7 @@ async def nextEpreuve(nomEpreuve: str):
     """
     await asyncio.sleep(delaiEntreEpreuves)
     await printEmbedNextEpreuve(nomEpreuve)
-    await asyncio.sleep(delaiDebutPartie)
+    await asyncio.sleep(delaiEntreEpreuves)
 
 
 async def printEmbedNextEpreuve(nomEpreuve: str):
@@ -150,6 +150,14 @@ async def printEmbedNextQuestion():
     )
     await channel.send(embed=embed)
 
+
+async def printEmbedFirstQuestion():
+    """ Methode de construction de l'embed d'affichage de la prochaine question."""
+    embed = discord.Embed(
+        title="Première question",
+        color=colorEmbedWhiteDBV
+    )
+    await channel.send(embed=embed)
 
 async def printEmbedDebutPartie():
     """ Methode de construction de l'embed d'affichage du début de la partie."""
@@ -274,14 +282,16 @@ async def printClue(reponses):
 
         Returns
         -------
-        str
+        indice : str
             le mot qui a été transformé sous forme d'un indice
+        rep : str
+            la bonne réponse sans transformation
     """
     mots = reponses.split("/")
     random.seed(datetime.now())
     random.shuffle(mots)
     indice = mots[0]
-
+    rep = mots[0]
     tailleMot = len(indice)
 
     if tailleMot < 2:
@@ -342,7 +352,7 @@ async def printClue(reponses):
     )
     await channel.send(embed=embed)
 
-    return indice
+    return indice, rep
 
 
 # * AFFICHAGE JEU QUIZ (BOUTONS)  ------------------------------------------------------------------- #
