@@ -27,8 +27,6 @@ tabRoleBold = ["**Mugiwara**", "**Foxy**"]
 mugiBoutonBlanc = "▫️ {}️ {} : ".format(tabEmoji[indiceEquipe1], tabRole[indiceEquipe1])
 foxyBoutonBlanc = "▫️ {} {} : ".format(tabEmoji[indiceEquipe2], tabRole[indiceEquipe2])
 tabPlayer = [[], []]  # tableau des joueurs
-nombreJoueursEquipe1 = 1
-nombreJoueursEquipe2 = 2
 
 # ------------------------------------------------------------------------------------------------------------#
 # MESSAGES DAVYBACKFIGHT
