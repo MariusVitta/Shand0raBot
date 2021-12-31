@@ -2,6 +2,7 @@ import time
 from games import *
 from traces import *
 
+
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -9,7 +10,8 @@ GUILD = os.getenv('DISCORD_GUILD')
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
-global partieEnCours, nombreJoueurs, contexteExecution, trace
+global partieEnCours, nombreJoueurs, contexteExecution, trace, nbJoueursParEquipe
+partieEnCours = False
 
 
 def diff(li1, li2):
@@ -34,8 +36,14 @@ def diff(li1, li2):
 @client.event
 async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
-    global partieEnCours
-    partieEnCours = False
+
+
+
+
+
+@client.command()
+async def test(ctx):
+    await ctx.channel.send("sale naze {}".format(ctx.message.author.name))
 
 
 @client.event
@@ -125,9 +133,9 @@ async def start_error(ctx, error):
         error : erreur
             instance de Error
     """
-    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+    if isinstance(error, MissingRequiredArgument):
         await ctx.send(usageBot)
-    if isinstance(error, discord.ext.commands.errors.ArgumentParsingError):
+    if isinstance(error, ArgumentParsingError):
         await ctx.send(usageBot)
     return
 
@@ -258,7 +266,7 @@ async def attente_joueur(payload):
     nbJoueurTotal = nbJoueursParEquipe + 1
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= nbJoueurTotal - 2 and reactionEquipe2.count >= nbJoueurTotal - 1):
+            reactionEquipe1.count >= nbJoueurTotal and reactionEquipe2.count >= nbJoueurTotal):
         time.sleep(0.5)  # on permet au bot de gerer le changement de role furtif
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users(limit=nbJoueurTotal):
@@ -276,10 +284,10 @@ async def attente_joueur(payload):
 
         if not partieEnCours:
             # ---- trace ------
-            trace.numberPlayer(tabPlayer)
+            trace.numberPlayer(tabJoueurs)
             partieEnCours = True
             partieEnCours = await lancerJeux(tabJoueurs, contexteExecution, tabJoueursDiscriminator, trace)
-            await removeRoles(payload, tabPlayer)
+            await removeRoles(payload, tabJoueurs)
         else:
             return
 

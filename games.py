@@ -61,15 +61,20 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
         dossier :str
             dossier ou se trouve l'image actuellement
     """
-    img = Image.open(path + "/" + dossier + "/" + fichier)
-    imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
-    result = imgSmall.resize(img.size, Image.NEAREST)
-    if not os.path.exists(pathFlou + "/" + dossier):
-        os.makedirs(pathFlou + "/" + dossier, mode=0o777,
-                    exist_ok=False)  # création du dossier s'il n'existe pas encore
-    result.save(pathFlou + "/" + dossier + "/" + fichier)
+    word = RandomWords()
+    word = word.get_random_word()
+    if os.path.exists("{}/{}".format(dossier, fichier)):
+        img = Image.open(path + "/" + dossier + "/" + fichier)
+        imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
+        result = imgSmall.resize(img.size, Image.NEAREST)
+        if not os.path.exists(pathFlou + "/" + dossier):
+            os.makedirs(pathFlou + "/" + dossier, mode=0o777,
+                        exist_ok=False)  # création du dossier s'il n'existe pas encore
+        result.save(pathFlou + "/" + dossier + "/" + word)
+    else:
+        print("l'image {}/{} n'existe pas".format(dossier, fichier))
 
-    return
+    return word
 
 
 def selectManga():
@@ -130,7 +135,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
         roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
 
-        if m.channel != channel:
+        if m.channel != channelMessage:
             return False
         # on empêche aux non-joueurs de jouer simplement
         if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
@@ -178,7 +183,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
             trace.saveTraceQuestionsImage(numQuestion, file)
 
             # pixelisation de l'image
-            traitementImage(file, tabTailleResize[0], dossier)
+            file = traitementImage(file, tabTailleResize[0], dossier)
             await printEmbedImage(file, dossier)
 
             # récuperation du bon nom de l'image
@@ -192,7 +197,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
                 except asyncio.TimeoutError:
                     if valeurResize != tabTailleResize[-1] and valeurResize != -1:
-                        traitementImage(file, valeurResize, dossier)
+                        file = traitementImage(file, valeurResize, dossier)
                         await printEmbedImage(file, dossier)
                     elif valeurResize == -1:
                         indice, reponse = await printClueImage(tabBonnesReponse)
@@ -312,7 +317,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
         guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
         roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
-        if m.channel != channel:
+        if m.channel != channelMessage:
             return False
 
         if roleTeam1 not in m.author.roles and roleTeam2 not in m.author.roles:
@@ -374,7 +379,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
             reps = tabRep.replace("\n", "").split("/")
             random.seed(datetime.now())
             random.shuffle(reps)
-            view = boutons.Quiz(reps, rep, len(reps) - 1)
+            view = boutons.Quiz(reps, rep, len(tabPlayerDiscriminator))
             await msgv.edit(view=view)
             finView = await view.wait()
             if finView:
@@ -441,7 +446,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 random.seed(datetime.now())
                 random.shuffle(reps)
                 view = boutons.Quiz(reps, bonneRep,
-                                    len(reps) - 1)
+                                    len(tabPlayerDiscriminator))
                 await msgv.edit(view=view)
                 finView = await view.wait()
                 if finView:
@@ -547,7 +552,7 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     await asyncio.sleep(delaiDebutPartieCinq)
     # affichage des vainqueurs
     await printWinners(pointsTeam1, pointsTeam2)
-    
+
     # Sauvegarde des points
     trace.saveTracePoints(pointsTeam1, pointsTeam2)
 
