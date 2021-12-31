@@ -6,16 +6,17 @@ load_dotenv()
 
 IDCHANNEL = int(os.getenv('IDCHANNEL'))
 GUILD = str(os.getenv('DISCORD_GUILD'))
+global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, channelMessage, valTeam2, tabPlayer, questionActuelle, reponsesActuelles, tabPlayerDiscriminator, ctxExecution, partieEnCours, trace
 
 
-async def initVar():
+def initVar():
     """ Méthode d'initialisation des variables globales."""
-    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, tabPlayer, channel, questionActuelle, reponsesActuelles
+    global pointsTeam2, pointsTeam1, numeroJeu, valTeam1, valTeam2, channelMessage, questionActuelle, reponsesActuelles
     pointsTeam2, pointsTeam1, numeroJeu = 0, 0, 0
     valTeam1, valTeam2 = "", ""
-    channel = client.get_channel(IDCHANNEL)
+    channelMessage = client.get_channel(IDCHANNEL)
     questionActuelle = []
-    reponsesActuelles = []
+    reponsesActuelles = ""
 
 
 async def calculPoints(messageAuthor, tabJoueurDiscriminator: [str]):
@@ -90,11 +91,12 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
         tabJDiscriminator : [str]
             tableaux des joueurs avec leurs discriminants
     """
-    global numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2, channel, tabPlayerDiscriminator
+    global numeroJeu, pointsTeam1, pointsTeam2, valTeam1, valTeam2, tabPlayerDiscriminator
     tabPlayerDiscriminator = tabJDiscriminator
     numeroJeu = numJeu
     tabBonnesReponse = []
     imagesVues = []
+    reponse = ""
 
     def traitementNom(nomFichier: str):
         tempName = os.path.splitext(nomFichier)
@@ -141,13 +143,13 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
             return (' ' + userAnswer + ' ') in (' ' + toGuess + ' ')
 
         for rep in tabBonnesReponse:
-            if "_" in rep: # on va différencier les réponses ou un ensemble de mot ne peuvent pas être séparé des autres
+            if "_" in rep:  # on va différencier les réponses ou un ensemble de mot ne peuvent pas être séparé des autres
                 rep = rep.replace("_", " ").lower()
-                if contains_word(rep.lower(), m.content.lower()):
+                if contains_word(unidecode(rep.lower()), unidecode(m.content.lower())):
                     return True
             else:
                 for word in m.content.split(" "):
-                    if rep.lower() in word.lower():
+                    if unidecode(rep.lower()) in unidecode(word.lower()):
                         return True
         return False
 
@@ -155,83 +157,116 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
 
         # récuperation d'un manga différent à chaque tour de jeu
         dossier = selectManga()
-        files = os.listdir(path + "/" + dossier)
-        # Random number with system time
-        random.seed(datetime.now())
-        random.shuffle(files)
-        file = files[0]
-        if file in imagesVues:
-            while file in imagesVues:
-                dossier = selectManga()
-                files = os.listdir(path + "/" + dossier)
-                # Random number with system time
-                random.seed(datetime.now())
-                random.shuffle(files)
-                file = files[0]
-        """dossier = "Hunter x Hunter"
-        file = "Knuckle_Bine-Knuckle.png"""
-        imagesVues.append(file)
-        trace.saveTraceQuestionsImage(numQuestion, file)
+        if os.path.exists("{}/{}".format(path, dossier)):
+            files = os.listdir(path + "/" + dossier)
+            # Random number with system time
+            random.seed(datetime.now())
+            random.shuffle(files)
+            file = files[0]
 
-        # pixelisation de l'image
-        traitementImage(file, tabTailleResize[0], dossier)
-        await printEmbedImage(file, dossier)
+            if file in imagesVues:
+                while file in imagesVues:
+                    dossier = selectManga()
+                    files = os.listdir(path + "/" + dossier)
+                    # Random number with system time
+                    random.seed(datetime.now())
+                    random.shuffle(files)
+                    file = files[0]
+            """dossier = "Hunter x Hunter"
+            file = "Knuckle_Bine-Knuckle.png"""
+            imagesVues.append(file)
+            trace.saveTraceQuestionsImage(numQuestion, file)
 
-        # récuperation du bon nom de l'image
-        tabBonnesReponse = traitementNom(file)
+            # pixelisation de l'image
+            traitementImage(file, tabTailleResize[0], dossier)
+            await printEmbedImage(file, dossier)
 
-        for valeurResize in tabTailleResize[1:]:  # on exclut le premier item, car on l'a deja traité
-            # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
-            try:
-                message = await client.wait_for("message", timeout=delaiQuestionsImages / len(tabTailleResize),
-                                                check=checkMessage)
-            # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
-            except asyncio.TimeoutError:
-                if valeurResize != tabTailleResize[-1]:
-                    traitementImage(file, valeurResize, dossier)
-                    await printEmbedImage(file, dossier)
-                else:  # on est arrivé au bout du tableau et on affiche la bonne réponse
+            # récuperation du bon nom de l'image
+            tabBonnesReponse = traitementNom(file)
+
+            for valeurResize in tabTailleResize[1:]:  # on exclut le premier item, car on l'a deja traité
+                # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
+                try:
+                    message = await client.wait_for("message", timeout=delaiQuestionsImages / len(tabTailleResize),
+                                                    check=checkMessage)
+                # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
+                except asyncio.TimeoutError:
+                    if valeurResize != tabTailleResize[-1] and valeurResize != -1:
+                        traitementImage(file, valeurResize, dossier)
+                        await printEmbedImage(file, dossier)
+                    elif valeurResize == -1:
+                        indice, reponse = await printClueImage(tabBonnesReponse)
+                        trace.saveTraceIndice(indice)
+                    else:  # on est arrivé au bout du tableau et on affiche la bonne réponse
+                        await printEmbedTimeoutImage(file, reponse, dossier)
+
+                        if numQuestion != nbQuestions - 1:
+                            await nextQuestion()
+                        break
+
+                # sinon on met à jour les points de l'equipe qui a marqué un point,
+                # on affiche l'auteur du bon message dans un
+                # embed et les points des equipes
+                else:
+                    await calculPoints(message.author, tabPlayerDiscriminator)
                     reponse = tabBonnesReponse
-                    await printEmbedTimeoutImage(file, reponse, dossier)
-
+                    await printEmbedBonneReponseImage(file, reponse, message, dossier, pointsTeam1, pointsTeam2,
+                                                      valTeam1,
+                                                      valTeam2)
+                    await asyncio.sleep(delaiQuestionsImages / len(tabTailleResize))
                     if numQuestion != nbQuestions - 1:
                         await nextQuestion()
                     break
+        else:
+            print("le dossier {}/{} n'existe pas".format(path, dossier))
 
-            # sinon on met à jour les points de l'equipe qui a marqué un point,
-            # on affiche l'auteur du bon message dans un
-            # embed et les points des equipes
-            else:
-                await calculPoints(message.author, tabPlayerDiscriminator)
-                reponse = tabBonnesReponse
-                await printEmbedBonneReponseImage(file, reponse, message, dossier, pointsTeam1, pointsTeam2, valTeam1,
-                                                  valTeam2)
-                if numQuestion != nbQuestions - 1:
-                    await nextQuestion()
-                break
-
-    #await nextEpreuve(nomEpreuve3)
+    # await nextEpreuve(nomEpreuve3)
     return
 
 
 def selectQuestion():
     """ Methode de selection d'un manga dans la liste des mangas disponibles """
-    with open('One Piece.txt', 'r', encoding="utf-8") as source:
-        data = [line for line in source]
-    random.seed(datetime.now())
-    random.shuffle(data)
-    s = data[0].split(":")
-    return s[1].split(";")
+
+    if os.path.exists("{}".format(fichiersQuestions)):
+        with open(fichiersQuestions, 'r', encoding="utf-8") as source:
+            data = [line for line in source]
+        random.seed(datetime.now())
+        random.shuffle(data)
+        s = data[0].split(":")
+        return s[1].split(";")
+    else:
+        print("le fichier {} n'existe pas".format(fichiersQuestions))
 
 
 def getQuestion():
-    global questionActuelle
     return questionActuelle
 
 
 def getReponses():
-    global reponsesActuelles
     return reponsesActuelles
+
+
+def traitementImageQuiz(fichier: str, valeurResize: int, dossier: str):
+    """ Methode de traitement de l'image.
+        Cette méthode va resize l'image afin de lui donner un effet pixelisé
+        on va créer une nouvelle image qui se trouvera dans le dossier `magesFloues`
+
+        Parameters
+        ----------
+        fichier :str
+            nom de l'image que l'on veut pixeliser
+        valeurResize :int
+            taille du resize de l'image
+        dossier :str
+            dossier ou se trouve l'image actuellement
+    """
+    if os.path.exists("{}/{}".format(dossier, fichier)):
+        img = Image.open(dossier + "/" + fichier)
+        imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
+        result = imgSmall.resize(img.size, Image.NEAREST)
+        result.save(dossier + "/" + fichier)
+    else:
+        print("l'image {}/{} n'existe pas".format(dossier, fichier))
 
 
 async def jeu(numJeu: int, tabJoueurDiscriminator: list):
@@ -244,7 +279,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
         tabJoueurDiscriminator : list
             tableau des joueurs avec leurs discriminants
     """
-    global contexteExecution, numeroJeu, channel, questionActuelle, reponsesActuelles, tabPlayerDiscriminator
+    global numeroJeu, questionActuelle, reponsesActuelles, tabPlayerDiscriminator
     numeroJeu = numJeu
     questionsVues = []
     tabPlayerDiscriminator = tabJoueurDiscriminator
@@ -291,19 +326,10 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
         reponses = getReponses()
         tableauReps = reponses.split("/")
         for bonneReponse in tableauReps:
-            if contains_word(bonneReponse.lower(), m.content.lower()):
+            if contains_word(unidecode(bonneReponse.lower()), unidecode(m.content.lower())):
                 return True
 
         # 2)
-        if len(m.content) > 7:
-            for reps in tableauReps:
-                if jellyfish.damerau_levenshtein_distance(m.content.lower(),
-                                                          reps.lower()) <= 1:  # on regarde les changements de position des lettres
-                    return True
-                elif jellyfish.levenshtein_distance(m.content.lower(),
-                                                    reps.lower()) <= 1:  # puis on regarde le changement de lettre
-                    return True
-            return False
 
     for numQuestion in range(nbQuestions * 2):
 
@@ -312,12 +338,21 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
         question = data[indiceQuestion]
         tabRep = data[indiceReponses]
         typeQuestion = data[indiceTypeQuestion]
+        imageQuiz = data[-1].rstrip("\n")
         if question in questionsVues:
             while question in questionsVues:
                 data = selectQuestion()
                 question = data[indiceQuestion]
                 tabRep = data[indiceReponses]
                 typeQuestion = data[indiceTypeQuestion]
+                imageQuiz = data[-1].rstrip("\n")
+
+        """question = "Est-ce que ce t-shirt de Luffy existe ?"
+        tabRep = "Vrai/Faux"
+        bonneRep = "Vrai"
+        typeQuestion = "1"
+        imageQuiz = "None"""
+        # "Est-ce que ce t-shirt de Luffy existe ?;Vrai/Faux;1;Vrai;ASL.png"
         trace.saveTraceQuestions(numQuestion, question, tabRep, typeQuestion)
         questionsVues.append(question)
         questionActuelle = question
@@ -327,15 +362,19 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
         #
         # Si la question comporte plusieurs réponses possibles, on lance la question à choix multiple
         if int(typeQuestion) == choixMultiple:
-            embed = discord.Embed(
-                title="🔸 " + questionActuelle,
-                color=colorEmbedWhiteDBV
-            )
+            if imageQuiz.lower() != noneString:
+                traitementImageQuiz(imageQuiz, 200, pathImageQuiz)
+                msgv = await printEmbedImageQuiz(losangeOrange, questionActuelle, imageQuiz, pathImageQuiz)
+            else:
+                msgv = await printEmbedQuestions(losangeOrange, questionActuelle)
+
             rep = data[indiceBonneReponse].rstrip("\n")
-            msgv = await contexteExecution.send(embed=embed)
-            await asyncio.sleep(delaiZeroCinq)
+            await asyncio.sleep(delaiDeux)
             # dataV = []
-            view = boutons.Quiz(tabRep.replace("\n", "").split("/"), rep, (len(tabPlayer[0]) + len(tabPlayer[1])))
+            reps = tabRep.replace("\n", "").split("/")
+            random.seed(datetime.now())
+            random.shuffle(reps)
+            view = boutons.Quiz(reps, rep, len(reps) - 1)
             await msgv.edit(view=view)
             finView = await view.wait()
             if finView:
@@ -354,8 +393,12 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
             boutons.tentative = []
             pass
 
-        else:
-            await printEmbedQuestions(questionActuelle)
+        elif int(typeQuestion) == choixSimple:
+            if imageQuiz.lower() != noneString:
+                traitementImageQuiz(imageQuiz, 200, pathImageQuiz)
+                await printEmbedImageQuiz(losangeBleu, questionActuelle, imageQuiz, pathImageQuiz)
+            else:
+                await printEmbedQuestions(losangeBleu, questionActuelle)
             await asyncio.sleep(delaiZeroCinq)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
@@ -387,7 +430,35 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
 
                     numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
                     break
-
+        else:
+            if imageQuiz.lower() != noneString:
+                traitementImageQuiz(imageQuiz, 200, pathImageQuiz)
+                msgv = await printEmbedImageQuiz(losangeBleu, questionActuelle, imageQuiz, pathImageQuiz)
+                await asyncio.sleep(delaiZeroCinq)
+                # dataV = []
+                bonneRep = data[indiceBonneReponse].rstrip("\n")
+                reps = tabRep.replace("\n", "").split("/")
+                random.seed(datetime.now())
+                random.shuffle(reps)
+                view = boutons.Quiz(reps, bonneRep,
+                                    len(reps) - 1)
+                await msgv.edit(view=view)
+                finView = await view.wait()
+                if finView:
+                    await printEmbedTimeout(bonneRep)
+                else:
+                    if boutons.dataV[0]:
+                        await calculPoints(boutons.dataV[1], tabPlayerDiscriminator)
+                        await printEmbedBonneReponse(bonneRep, boutons.dataV[1].display_name, pointsTeam1, pointsTeam2,
+                                                     valTeam1,
+                                                     valTeam2)
+                        trace.saveTraceBoutons(boutons.dataV[1].display_name, bonneRep)
+                    elif not boutons.dataV[0]:
+                        await printEmbedNoAnswer(bonneRep)
+                        trace.traceTimeoutBoutons(bonneRep)
+                numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
+                boutons.dataV = []
+                boutons.tentative = []
     return
 
 
@@ -400,9 +471,12 @@ def sauvegardeScore(tabJDiscriminator: list):
                tableau de string contenant le nom de l'ensemble des joueurs avec leurs discriminants
 
     """
+    if not os.path.exists("{}".format(fichierScore)):
+        open(fichierScore, "x")  # création du fichier s'il n'existe pas encore
+
     data = []
     # récuperation de l'ensemble des scores actuels
-    with open('scores.txt', 'r', encoding="utf-8") as source:
+    with open(fichierScore, 'r', encoding="utf-8") as source:
         for line in source:
             if line != "\n":
                 line = line.rstrip("\n")
@@ -420,7 +494,7 @@ def sauvegardeScore(tabJDiscriminator: list):
         else:
             data.append([joueur[0], joueur[1]])
     # sauvegarde de tous les scores après les avoir mis à jour
-    with open('scores.txt', 'w') as target:
+    with open(fichierScore, 'w') as target:
         for i in range(len(data)):
             target.write(data[i][0] + "/" + str(data[i][1]) + "\n")
 
@@ -447,19 +521,19 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
         bool
             booleen représentant la fin de partie
     """
-    global numeroJeu, partieEnCours, pointsTeam1, pointsTeam2, tabPlayer, contexteExecution, channel, tabPlayerDiscriminator, trace
-    await initVar()
-    tabPlayer = tabJoueur
-    contexteExecution = ctx
+    global partieEnCours, pointsTeam1, pointsTeam2, ctxExecution, channelMessage, tabPlayerDiscriminator, trace
+    initVar()
+    tabJoueurs = tabJoueur
+    ctxExecution = ctx
     tabPlayerDiscriminator = tabJoueurDiscriminator
     trace = traceGame
 
-    await printPlayer(tabPlayer)
+    await printPlayer(tabJoueurs)
     await asyncio.sleep(delaiDebutPartieCinq)
     await printEmbedDebutPartie()
-    await asyncio.sleep(delaiDebutPartieCinq)
+    await asyncio.sleep(delaiDebutPartieTrois)
     await printEmbedFirstQuestion()
-
+    await asyncio.sleep(delaiDebutPartieCinq)
     # quiz
     trace.traceQuestionQuiz()
     await jeu(0, tabPlayerDiscriminator)
@@ -470,11 +544,14 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     await jeuImage(1, tabPlayerDiscriminator)
     trace.traceFinQuestionImage()
 
+    await asyncio.sleep(delaiDebutPartieCinq)
     # affichage des vainqueurs
     await printWinners(pointsTeam1, pointsTeam2)
-
+    
     # Sauvegarde des points
-    trace.saveTracePoints(pointsTeam1,pointsTeam2)
+    trace.saveTracePoints(pointsTeam1, pointsTeam2)
+
+    # tabPlayerDiscriminator = [["un_ancian#8649", 5], ["xRock#9091", 5]]
     sauvegardeScore(tabPlayerDiscriminator)
 
     # reset

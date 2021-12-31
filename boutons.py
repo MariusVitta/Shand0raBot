@@ -1,12 +1,15 @@
-import discord
 from config import *
 
 # Définition de deux variables globales qu'on utilisera dans games.py
 global tentative, dataV
-tentative = []
-dataV = []
 
 load_dotenv()
+
+
+def initVar():
+    global tentative, dataV
+    tentative = []
+    dataV = []
 
 
 class QuizButton(discord.ui.Button):
@@ -60,7 +63,7 @@ class QuizButton(discord.ui.Button):
         Renvoie à l'utilisateur qu'il ne peut pas réponse s'il ne joue pas la session
         Renvoie à l'utilisateur qu'il a droit à une seule tentative s'il a déjà répondu
         Renvoie à l'utilisateur qu'il a faux s'il s'est trompé
-        Si tout le monde a répondu ou que quelqu'un a donné une bonne réponse, on arrête la vue qui contient le bouton,
+        Si tout le monde a répondu ou que quelqu'un a donné une bonne réponse, on arrête la vue qui contient le bouton
         et tous les boutons sont désactivés en rouge, la bonne réponse en vert.
 
         Parameters
@@ -71,7 +74,7 @@ class QuizButton(discord.ui.Button):
         assert self.view is not None
         view: Quiz = self.view
 
-        # Vérification que c'est bien un joueur de la session en cours. Si c'en est pas un, on lui dit
+        # Vérification que c'est bien un joueur de la session en cours. Si ce n'en est pas un, on lui dit
         guild = interaction.guild
         roleTeam1 = discord.utils.get(guild.roles, name=tabRole[0])
         roleTeam2 = discord.utils.get(guild.roles, name=tabRole[1])
@@ -101,7 +104,7 @@ class QuizButton(discord.ui.Button):
                               interaction.user])  # On exporte dans dataV qu'une bonne réponse a été trouvée et le nom de celui qui a la bonne réponse
                 view.stop()
 
-            else:  # Cas où tout le monde a répondu mais il n'y a pas de bonne réponse OU que le temps est écoulé
+            else:  # Cas où tout le monde a répondu, mais il n'y a pas de bonne réponse OU que le temps est écoulé
                 for i in view.children:  # Ici on désactive tous les boutons et on le met en rouge, sauf la bonne réponse qui est mise en vert
                     i.disabled = True
                     if i.rep == self.bonneReponse:
@@ -152,7 +155,7 @@ class Quiz(discord.ui.View):
         nbJoueurs : int
             Le nombre de joueurs dans la partie
         """
-
+        initVar()
         self.tabReponses = tabReponses
         self.bonneReponse = bonneReponse
         self.nbJoueurs = nbJoueurs
@@ -169,7 +172,7 @@ class Quiz(discord.ui.View):
         Parameters
         -----
         error : Exception
-            L'exception a l'origine de l'erreur
+            L'exception à l'origine de l'erreur
         item : Item
             L'item Discord lié à l'erreur s'il y en a un
         interaction : Interaction

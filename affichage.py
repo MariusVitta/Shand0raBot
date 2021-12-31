@@ -159,6 +159,7 @@ async def printEmbedFirstQuestion():
     )
     await channel.send(embed=embed)
 
+
 async def printEmbedDebutPartie():
     """ Methode de construction de l'embed d'affichage du début de la partie."""
     embed = discord.Embed(
@@ -213,17 +214,19 @@ async def printEmbedTimeout(answer: str):
     await channel.send(embed=embed)
 
 
-async def printEmbedQuestions(question: str):
+async def printEmbedQuestions(couleurLosange: str, question: str):
     """ Methode de construction de l'embed d'affichage de la question actuelle.
 
         Parameters
         ----------
+        couleurLosange : str
+            couleur du losange
         question : str
             question actuelle à faire afficher
 
     """
     embed = discord.Embed(
-        title="🔹 {}".format(question),
+        title="{}{}".format(couleurLosange, question),
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
@@ -355,6 +358,34 @@ async def printClue(reponses):
     return indice, rep
 
 
+async def printEmbedImageQuiz(couleurLosange: str, question: str, fichier: str, dossier: str):
+    """ Methode de construction de l'embed d'affichage de la question lors d'une question avec une image
+
+        Parameters
+        ----------
+        couleurLosange : str
+            couleur du losange
+        question : str
+            question
+        fichier : str
+            nom du fichier à faire afficher dans l'embed
+        dossier : str
+            nom du dossier contenant `fichier`
+
+        Returns
+        -------
+        msg : Message
+            pointeur sur le message envoyé
+    """
+    embed = discord.Embed(
+        title="{}{}".format(couleurLosange, question),
+        color=colorEmbedWhiteDBV
+    )
+    embed.set_image(url="attachment://" + fichier)
+    msg = await channel.send(file=discord.File(dossier + "/" + fichier), embed=embed)
+    return msg
+
+
 # * AFFICHAGE JEU QUIZ (BOUTONS)  ------------------------------------------------------------------- #
 
 async def printEmbedNoAnswer(answer: str):
@@ -376,6 +407,98 @@ async def printEmbedNoAnswer(answer: str):
 
 
 # * AFFICHAGE JEU IMAGE ------------------------------------------------------------------- #
+
+async def printClueImage(reponses: list):
+    """ Methode d'affichage des indices du jeu.
+        Si le mot fait 1 caractère, on n'affiche rien
+        si le mot fait entre 2 et 3 caractères on affiche un seul caractère
+        Si le mot fait entre 4 et 6 caractères, on affiche un deux caractere pr l'indice
+        si le mot fait entre et entre 7 et 9 caractères, on affiche trois caractères
+        sinon si plus de 9 caractères, on affiche quatre caractères
+
+        Parameters
+        ---------
+        reponses : [str]
+            liste des réponses [reponse_1, reponse2,reponse_3, ..., reponseX]
+
+        Returns
+        -------
+        indice : str
+            le mot qui a été transformé sous forme d'un indice
+        rep : str
+            la bonne réponse sans transformation
+    """
+
+    random.seed(datetime.now())
+    random.shuffle(reponses)
+    if "_" in reponses[0]:
+        indice = reponses[0].replace("_", " ")
+    else:
+        indice = reponses[0]
+
+    rep = indice
+    tailleMot = len(indice)
+
+    if tailleMot < 2:
+        return
+
+    listMot = list(indice)
+    espace = " "
+    underscore = "_"
+    charArray = [",", "\"", "'", ":", "(", ")", "."]  # caractères que l'on va pas transformer en underscore
+    car1, car2, car3, car4 = 1, 1, 1, 1
+
+    if 2 <= tailleMot <= 3:
+        car1 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf la lettre selectionné en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+
+    elif 4 <= tailleMot <= 7:
+        while car1 == car2:  # on évite de choisir 2 fois la meme lettres à faire afficher en indice
+            car1 = random.randrange(0, len(listMot))
+            car2 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf les 2 lettres selectionnés en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and i != car2 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+    elif 7 <= tailleMot <= 9:
+        while car1 == car2 and car2 == car3:  # on évite de choisir 3 fois la meme lettre à faire afficher en indice
+            car1 = random.randrange(0, len(listMot))
+            car2 = random.randrange(0, len(listMot))
+            car3 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf les 2 lettres selectionnés en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and i != car2 and i != car3 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+    else:
+        while car1 == car2 and car2 == car3 and car3 == car4:  # on évite de choisir 3 fois la meme lettre à faire afficher en indice
+            car1 = random.randrange(0, len(listMot))
+            car2 = random.randrange(0, len(listMot))
+            car3 = random.randrange(0, len(listMot))
+            car4 = random.randrange(0, len(listMot))
+        for i in range(len(listMot)):  # on transforme tout sauf les 2 lettres selectionnés en underscore
+            if listMot[i].isspace():
+                listMot[i] = espace
+            elif i != car1 and i != car2 and i != car3 and i != car4 and listMot[i] not in charArray:
+                listMot[i] = underscore
+        indice = "".join(listMot)
+
+    embed = discord.Embed(
+        title="💡 Indice : `{}`".format(indice),
+        color=discord.Color.from_rgb(255, 216, 63)
+    )
+    await channel.send(embed=embed)
+
+    return indice, rep
+
 
 async def printEmbedBonneReponseImage(fichier: str, reponses: list, messageSender: any, dossier: str, pointsTeam1: int,
                                       pointsTeam2: int, valTeam1: str, valTeam2: str):
@@ -441,7 +564,7 @@ async def printEmbedImage(fichier: str, dossier: str):
     await channel.send(file=discord.File(pathFlou + "/" + dossier + "/" + fichier), embed=embed)
 
 
-async def printEmbedTimeoutImage(fichier: str, reponses: list, dossier: str):
+async def printEmbedTimeoutImage(fichier: str, reponse: str, dossier: str):
     """ Methode de construction de l'embed d'affichage de la bonne réponse lors d'une question avec une image,
         lorsque le délai est ecoulé
 
@@ -449,15 +572,15 @@ async def printEmbedTimeoutImage(fichier: str, reponses: list, dossier: str):
         ----------
         fichier : str
             nom du fichier à faire afficher dans l'embed
-        reponses : list
+        reponse : list
             ensemble des réponses pour l'image
         dossier : str
             nom du dossier contenant `fichier`
     """
-    if "_" in reponses[0]:
+    """if "_" in reponses[0]:
         reponse = reponses[0].replace("_", " ")
     else:
-        reponse = reponses[0]
+        reponse = reponses[0]"""
     embed = discord.Embed(
         title=timeout,
         description="{}`{}`".format(reponseText, reponse),

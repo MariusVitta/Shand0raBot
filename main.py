@@ -1,7 +1,5 @@
 import time
-
 from games import *
-from logs import *
 from traces import *
 
 load_dotenv()
@@ -12,7 +10,6 @@ IDCHANNEL = int(os.getenv('IDCHANNEL'))
 
 # Partie en cours ?
 global partieEnCours, nombreJoueurs, contexteExecution, trace
-partieEnCours = False
 
 
 def diff(li1, li2):
@@ -37,6 +34,15 @@ def diff(li1, li2):
 @client.event
 async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
+    global partieEnCours
+    partieEnCours = False
+
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, CommandNotFound):
+        return
+    raise error
 
 
 @client.command(aliases=['s'])
@@ -137,7 +143,7 @@ async def restart(self):
             :param self :
                 contexte d'execution
     """
-    await start(self, messageStart,nbJ=2)
+    await start(self, messageStart, nbJ=2)
     return
 
 
@@ -240,38 +246,39 @@ async def attente_joueur(payload):
             ensemble des données lorsque l'évenement est réalisé
     """
     global partieEnCours
-    tabPlayer = [[], []]
-    tabPlayerDiscriminator = []
+    tabJoueurs = [[], []]
+    tabJoueursDiscriminator = []
     channel = client.get_channel(IDCHANNEL)
+
     message = await channel.fetch_message(payload.message_id)
     reactionEquipe1 = get(message.reactions, emoji=tabEmoji[indiceEquipe1])
     reactionEquipe2 = get(message.reactions, emoji=tabEmoji[indiceEquipe2])
     guild = discord.utils.find(lambda g: g.name == GUILD, client.guilds)
+
+    nbJoueurTotal = nbJoueursParEquipe + 1
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= nbJoueursParEquipe + 1 and reactionEquipe2.count >= nbJoueursParEquipe + 1):
-
+            reactionEquipe1.count >= nbJoueurTotal - 2 and reactionEquipe2.count >= nbJoueurTotal - 1):
+        time.sleep(0.5)  # on permet au bot de gerer le changement de role furtif
         # récuperation de l'ensemble des joueurs
-        async for user in reactionEquipe1.users(limit=nbJoueursParEquipe + 1):
+        async for user in reactionEquipe1.users(limit=nbJoueurTotal):
             if not user.bot:
-                tabPlayer[indiceEquipe1].append(guild.get_member(user.id).display_name)
-                tabPlayerDiscriminator.append(
-                    [user.display_name + "#" + user.discriminator, 0])
-        async for user in reactionEquipe2.users(limit=nbJoueursParEquipe + 1):
+                tabJoueurs[indiceEquipe1].append(guild.get_member(user.id).display_name)
+                tabJoueursDiscriminator.append(
+                    [user.name + "#" + user.discriminator, 0])
+        async for user in reactionEquipe2.users(limit=nbJoueurTotal):
             if not user.bot:
-                tabPlayer[indiceEquipe2].append(guild.get_member(user.id).display_name)
-                tabPlayerDiscriminator.append([user.display_name + "#" + user.discriminator, 0])
+                tabJoueurs[indiceEquipe2].append(guild.get_member(user.id).display_name)
+                tabJoueursDiscriminator.append([user.name + "#" + user.discriminator, 0])
         # suppression du message afin d'eviter l'ajout de joueurs
         msg = await channel.fetch_message(payload.message_id)
         await delete_message(msg)
-        """time.sleep(20)
-        if reactionEquipe1.count >= minimumPlayer + 1 and reactionEquipe2.count >= minimumPlayer + 1:
-            """
+
         if not partieEnCours:
             # ---- trace ------
             trace.numberPlayer(tabPlayer)
             partieEnCours = True
-            partieEnCours = await lancerJeux(tabPlayer, contexteExecution, tabPlayerDiscriminator, trace)
+            partieEnCours = await lancerJeux(tabJoueurs, contexteExecution, tabJoueursDiscriminator, trace)
             await removeRoles(payload, tabPlayer)
         else:
             return
@@ -316,8 +323,9 @@ async def shutdown(ctx):
         Eteint le bot
 
     """
-    await ctx.channel.send("Le bot se deconnecte")
-    await ctx.close()
+    # await ctx.channel.send("Le bot se deconnecte")
+    os.system("python -u run.py")
+    exit()
 
 
 @client.command()
@@ -350,4 +358,4 @@ async def stop(ctx):
         await ctx.channel.send(embed=embed)
 
 
-client.run(TOKEN)
+client.run(TOKEN, reconnect=True)

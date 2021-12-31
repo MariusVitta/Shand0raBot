@@ -1,7 +1,6 @@
 # Bot
 from imports import *
 
-global tabPlayer, contexteExecution
 
 # ------------------------------------------------------------------------------------------------------------#
 # Gestion des commandes du bot
@@ -26,7 +25,6 @@ tabRole = ["Mugiwara", "Foxy"]
 tabRoleBold = ["**Mugiwara**", "**Foxy**"]
 mugiBoutonBlanc = "▫️ {}️ {} : ".format(tabEmoji[indiceEquipe1], tabRole[indiceEquipe1])
 foxyBoutonBlanc = "▫️ {} {} : ".format(tabEmoji[indiceEquipe2], tabRole[indiceEquipe2])
-tabPlayer = [[], []]  # tableau des joueurs
 minimumPlayer = 1
 # ------------------------------------------------------------------------------------------------------------#
 # MESSAGES DAVYBACKFIGHT
@@ -47,16 +45,23 @@ indiceQuestion = 0
 indiceReponses = 1
 indiceTypeQuestion = 2
 indiceBonneReponse = 3
+indiceImageQuiz = 4
 choixSimple = 1
 choixMultiple = 2
-
-listeMangas = ["One Piece", "Death Note", "Hunter x Hunter", "My Hero Academia"]
+choixSimpleAvecBouton = 3
+listeMangas = ['Black Clover', 'Bleach', 'Code Geass', 'Death Note', 'Dragon Ball', 'Fairy Tail', 'Food Wars',
+               'FullMetal Alchemist', 'Gintama', 'Haikyuu', 'Hajime No Ippo', 'Hunter x Hunter',
+               'JoJo Bizarre Adventure', 'Jujutsu Kaisen', 'Kimetsu No Yaiba', 'Kuroko No Basket', 'My Hero Academia',
+               'Nanatsu No Taizai', 'Naruto', 'One Piece', 'One Punch Man', 'Shingeki No Kyojin', 'Sword Art Online',
+               'Tokyo Ghoul', 'Tokyo Revengers']
 listesQuestions = ["One Piece", "Death Note"]
+fichiersQuestions = "One Piece.txt"
 
 nomEpreuve1 = "Quiz"
 nomEpreuve2 = "Qui est-ce ?"
 nomEpreuve3 = "nom épreuve 3"
-
+losangeOrange = "🔸 "
+losangeBleu = "🔹 "
 # ------------------------------------------------------------------------------------------------------------#
 # GESTIONS DES REPONSES
 
@@ -87,11 +92,17 @@ delaiDebutPartieTrois = 3
 delaiDebutPartieCinq = 5
 delaiReponse = 5
 delaiZeroCinq = 0.5
-
+delaiDeux = 2
 
 # ------------------------------------------------------------------------------------------------------------#
 # GESTION DES IMAGES
 path = 'images'
 pathFlou = 'imagesFloues'
-tabTailleResize = [8, 12, 16,
+pathImageQuiz = "imagesQuiz"
+noneString = "none"
+tabTailleResize = [8, 12, 16, -1,
                    200]  # résolution des images pour les pixeliser, le '200' correspond à l'image non pixelisée
+
+# ------------------------------------------------------------------------------------------------------------#
+# GESTION DES SCORES
+fichierScore = "scores.txt"

@@ -4,6 +4,7 @@ from discord.utils import get
 from discord import Interaction
 from discord.ui import Item
 from discord.ui import Button
+from discord.ext.commands import CommandNotFound
 import os
 from PIL import Image
 import asyncio
@@ -13,3 +14,4 @@ from dotenv import load_dotenv
 from re import search
 from datetime import datetime
 import jellyfish
+from unidecode import unidecode
