@@ -266,7 +266,7 @@ async def attente_joueur(payload):
     nbJoueurTotal = nbJoueursParEquipe + 1
     # le jeu démarrage si on a bien 3 joueurs dans chaque equipe, bot exclu
     if reactionEquipe1 and reactionEquipe2 and (
-            reactionEquipe1.count >= nbJoueurTotal and reactionEquipe2.count >= nbJoueurTotal):
+            reactionEquipe1.count >= nbJoueurTotal - 2 and reactionEquipe2.count >= nbJoueurTotal - 1):
         time.sleep(0.5)  # on permet au bot de gerer le changement de role furtif
         # récuperation de l'ensemble des joueurs
         async for user in reactionEquipe1.users(limit=nbJoueurTotal):

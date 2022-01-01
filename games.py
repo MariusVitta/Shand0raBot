@@ -59,22 +59,29 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
         valeurResize :int
             taille du resize de l'image
         dossier :str
-            dossier ou se trouve l'image actuellement
+            dossier ou se trouve l'image
+
+        Returns
+        -------
+        str
+            nom du fichier modifié
     """
     word = RandomWords()
     word = word.get_random_word()
-    if os.path.exists("{}/{}".format(dossier, fichier)):
+    tabNomFichier = os.path.splitext(fichier)
+    extension = tabNomFichier[1]
+    if os.path.exists("{}/{}/{}".format(path, dossier, fichier)):
         img = Image.open(path + "/" + dossier + "/" + fichier)
         imgSmall = img.resize((valeurResize, valeurResize), resample=Image.BILINEAR)
         result = imgSmall.resize(img.size, Image.NEAREST)
         if not os.path.exists(pathFlou + "/" + dossier):
             os.makedirs(pathFlou + "/" + dossier, mode=0o777,
                         exist_ok=False)  # création du dossier s'il n'existe pas encore
-        result.save(pathFlou + "/" + dossier + "/" + word)
+        result.save("{}/{}/{}".format(pathFlou, dossier, word + extension))
     else:
-        print("l'image {}/{} n'existe pas".format(dossier, fichier))
+        print("l'image {}/{}/{} n'existe pas".format(path, dossier, fichier))
 
-    return word
+    return word + extension
 
 
 def selectManga():
@@ -182,12 +189,16 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
             imagesVues.append(file)
             trace.saveTraceQuestionsImage(numQuestion, file)
 
-            # pixelisation de l'image
-            file = traitementImage(file, tabTailleResize[0], dossier)
-            await printEmbedImage(file, dossier)
-
             # récuperation du bon nom de l'image
             tabBonnesReponse = traitementNom(file)
+            nomImageOriginale = file
+
+            # pixelisation de l'image
+            file = traitementImage(nomImageOriginale, tabTailleResize[0], dossier)
+            await printEmbedImage(file, dossier)
+
+            """# récuperation du bon nom de l'image
+            tabBonnesReponse = traitementNom(file)"""
 
             for valeurResize in tabTailleResize[1:]:  # on exclut le premier item, car on l'a deja traité
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
@@ -197,13 +208,13 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 # si le timeout est dépassé, on envoie un message embed contenant la bonne réponse
                 except asyncio.TimeoutError:
                     if valeurResize != tabTailleResize[-1] and valeurResize != -1:
-                        file = traitementImage(file, valeurResize, dossier)
+                        file = traitementImage(nomImageOriginale, valeurResize, dossier)
                         await printEmbedImage(file, dossier)
                     elif valeurResize == -1:
                         indice, reponse = await printClueImage(tabBonnesReponse)
                         trace.saveTraceIndice(indice)
                     else:  # on est arrivé au bout du tableau et on affiche la bonne réponse
-                        await printEmbedTimeoutImage(file, reponse, dossier)
+                        await printEmbedTimeoutImage(nomImageOriginale, reponse, dossier)
 
                         if numQuestion != nbQuestions - 1:
                             await nextQuestion()
@@ -215,7 +226,7 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
                 else:
                     await calculPoints(message.author, tabPlayerDiscriminator)
                     reponse = tabBonnesReponse
-                    await printEmbedBonneReponseImage(file, reponse, message, dossier, pointsTeam1, pointsTeam2,
+                    await printEmbedBonneReponseImage(nomImageOriginale, reponse, message, dossier, pointsTeam1, pointsTeam2,
                                                       valTeam1,
                                                       valTeam2)
                     await asyncio.sleep(delaiQuestionsImages / len(tabTailleResize))
@@ -540,9 +551,9 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     await printEmbedFirstQuestion()
     await asyncio.sleep(delaiDebutPartieCinq)
     # quiz
-    trace.traceQuestionQuiz()
+    """trace.traceQuestionQuiz()
     await jeu(0, tabPlayerDiscriminator)
-    trace.traceFinQuestionQuiz()
+    trace.traceFinQuestionQuiz()"""
 
     # "qui est-ce"
     trace.traceQuestionImage()
