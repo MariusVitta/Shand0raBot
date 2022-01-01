@@ -1,3 +1,4 @@
+import os
 import time
 from games import *
 from traces import *
@@ -42,8 +43,14 @@ async def remove_dirs():
     files = os.listdir(pathFlou)
     for file in files:
         if os.path.exists("{}/{}".format(pathFlou, file)):
-            # removing the file using the os.remove() method
-            os.remove("{}/{}".format(pathFlou, file))
+            if len(os.listdir("{}/{}".format(pathFlou, file))) == 0:
+                os.rmdir("{}/{}".format(pathFlou, file))
+            else:
+                filesDir = os.listdir("{}/{}".format(pathFlou, file))
+                for f in filesDir:
+                    # removing the file using the os.remove() method
+                    os.remove("{}/{}/{}".format(pathFlou, file, f))
+                os.rmdir("{}/{}".format(pathFlou, file))
         else:
             # file not found message
             print("{}/{} n'existe pas".format(pathFlou, file))
