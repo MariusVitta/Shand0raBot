@@ -106,10 +106,10 @@ def traitementReponses(stringReponses: str):
     return premiereReponse
 
 
-async def nextQuestion():
+async def nextQuestion(typeQ=None):
     """ Methode d'attente entre 2 questions."""
     await asyncio.sleep(delaiEntreQuestions)
-    await printEmbedNextQuestion()
+    await printEmbedNextQuestion(typeQ)
     await asyncio.sleep(delaiDebutPartieCinq)
 
 
@@ -142,19 +142,22 @@ async def printEmbedNextEpreuve(nomEpreuve: str):
     await channel.send(embed=embed)
 
 
-async def printEmbedNextQuestion():
+async def printEmbedNextQuestion(typeQ=None):
     """ Methode de construction de l'embed d'affichage de la prochaine question."""
     embed = discord.Embed(
         title="Prochaine question",
         color=colorEmbedWhiteDBV
     )
+    if typeQ:
+        embed.description = f"La prochaine question sera un{'e question à choix simple' if typeQ == '1' else ' QCM'}",
     await channel.send(embed=embed)
 
 
-async def printEmbedFirstQuestion():
+async def printEmbedFirstQuestion(typeQ=None):
     """ Methode de construction de l'embed d'affichage de la prochaine question."""
     embed = discord.Embed(
         title="Première question",
+        description=f"La première question sera un{'e question à choix simple' if typeQ == '1' else ' QCM'}",
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
@@ -172,7 +175,7 @@ async def printEmbedDebutPartie():
 
 # * AFFICHAGE JEU QUIZ ------------------------------------------------------------------- #
 
-async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str):
+async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str, typeQ):
     """ Méthode d'affichage du texte "Question suivante" ou "Epreuve suivante"
 
         Parameters
@@ -190,7 +193,7 @@ async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str):
             nouvel indice du tableau de question
     """
     if numQuestion != (nbQuestions * 2) - 1:
-        await nextQuestion()
+        await nextQuestion(typeQ)
     elif numJeu != (len(tabEpreuves) - 1):
         await nextEpreuve(nomEpreuve)
     numQuestion += 1

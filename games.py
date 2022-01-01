@@ -243,13 +243,20 @@ async def jeuImage(numJeu: int, tabJDiscriminator: [str]):
 def selectQuestion():
     """ Methode de selection d'un manga dans la liste des mangas disponibles """
 
+    global data, question, tabRep, typeQuestion, imageQuiz
+
     if os.path.exists("{}".format(fichiersQuestions)):
         with open(fichiersQuestions, 'r', encoding="utf-8") as source:
             data = [line for line in source]
         random.seed(datetime.now())
         random.shuffle(data)
         s = data[0].split(":")
-        return s[1].split(";")
+        data = s[1].split(";")
+        question = data[indiceQuestion]
+        tabRep = data[indiceReponses]
+        typeQuestion = data[indiceTypeQuestion]
+        imageQuiz = data[-1].rstrip("\n")
+        return data
     else:
         print("le fichier {} n'existe pas".format(fichiersQuestions))
 
@@ -350,18 +357,6 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
     for numQuestion in range(nbQuestions * 2):
 
         # récuperation d'un manga différent à chaque tour de jeu
-        data = selectQuestion()
-        question = data[indiceQuestion]
-        tabRep = data[indiceReponses]
-        typeQuestion = data[indiceTypeQuestion]
-        imageQuiz = data[-1].rstrip("\n")
-        if question in questionsVues:
-            while question in questionsVues:
-                data = selectQuestion()
-                question = data[indiceQuestion]
-                tabRep = data[indiceReponses]
-                typeQuestion = data[indiceTypeQuestion]
-                imageQuiz = data[-1].rstrip("\n")
 
         """question = "Est-ce que ce t-shirt de Luffy existe ?"
         tabRep = "Vrai/Faux"
@@ -404,7 +399,11 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 elif not boutons.dataV[0]:
                     await printEmbedNoAnswer(rep)
                     trace.traceTimeoutBoutons(rep)
-            numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
+            selectQuestion()
+            if question in questionsVues:
+                while question in questionsVues:
+                    selectQuestion()
+            numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2, typeQuestion)
             boutons.dataV = []
             boutons.tentative = []
             pass
@@ -427,7 +426,11 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                     if nbAffichage == nombreTentatives / 2:  # affichage de la bonne réponse
                         # reponse = tabRep
                         await printEmbedTimeout(reponse)
-                        numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
+                        selectQuestion()
+                        if question in questionsVues:
+                            while question in questionsVues:
+                                selectQuestion()
+                        numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2, typeQuestion)
                         trace.traceTimeout()
                         break
                     else:  # affichage de l'indice
@@ -444,7 +447,11 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                                                  valTeam1,
                                                  valTeam2)
 
-                    numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2)
+                    selectQuestion()
+                    if question in questionsVues:
+                        while question in questionsVues:
+                            selectQuestion()
+                    numeroJeu = await affichage(numeroJeu, numQuestion, nomEpreuve2, typeQuestion)
                     break
         else:
             if imageQuiz.lower() != noneString:
@@ -548,7 +555,10 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     await asyncio.sleep(delaiDebutPartieCinq)
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartieTrois)
-    await printEmbedFirstQuestion()
+    selectQuestion()
+    print(data)
+    await printEmbedFirstQuestion(typeQuestion)
+    print(data)
     await asyncio.sleep(delaiDebutPartieCinq)
     # quiz
     """trace.traceQuestionQuiz()

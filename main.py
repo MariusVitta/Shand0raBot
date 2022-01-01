@@ -2,7 +2,6 @@ import time
 from games import *
 from traces import *
 
-
 load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -38,7 +37,16 @@ async def on_ready():
     print('Connecte en tant que {0}!'.format(client.user))
 
 
-
+@client.event
+async def remove_dirs():
+    files = os.listdir(pathFlou)
+    for file in files:
+        if os.path.exists("{}/{}".format(pathFlou, file)):
+            # removing the file using the os.remove() method
+            os.remove("{}/{}".format(pathFlou, file))
+        else:
+            # file not found message
+            print("{}/{} n'existe pas".format(pathFlou, file))
 
 
 @client.command()
@@ -97,7 +105,7 @@ async def start(self, message, nbJ):
     if message.lower() != messageStart.lower():
         await self.channel.send(usageBot)
         return
-
+    await remove_dirs()
     # création de la trace pour cette partie
     trace = Traces()
     await removeRoles(self, [])
