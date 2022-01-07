@@ -48,7 +48,7 @@ class Traces:
             target.close()
         return
 
-    def numberPlayer(self, tabJoueur: [str]):
+    def writePlayers(self, tabJoueur: [str]):
         """ Méthode de sauvegarde des joueurs de la partie YYYY-MM-DD_HH:MM:SS_name
 
                 Parameters

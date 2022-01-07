@@ -1,5 +1,7 @@
 import os
 import time
+
+import boutons
 from games import *
 from traces import *
 
@@ -83,10 +85,11 @@ async def start(self, message, nbJ):
         nbJ : int
             nombre de joueurs par équipe (entre 2 et 7)
     """
-    global contexteExecution, trace, nbJoueursParEquipe
-    contexteExecution = self
+    global contexteExecution, trace, nbJoueursParEquipe, partieEnCours
     message.lower()
     channel = self.channel
+
+    tab = [["Mugiwara", "☠"], ["Foxy", "🦊"]]  # emoji mugiwara, foxy
 
     # gestion du mauvais salon
     if IDCHANNEL != channel.id:
@@ -94,7 +97,7 @@ async def start(self, message, nbJ):
             f"Je ne peux pas me lancer dans ce salon là :( \n ➡️ {client.get_channel(IDCHANNEL).mention}")
         return
 
-    if int(nbJ) < 2 or int(nbJ) > 7:
+    if int(nbJ) < 1 or int(nbJ) > 7:
         await channel.send(
             f"Le nombre de joueurs par équipe doit être compris entre 2 et 7")
         return
@@ -126,6 +129,19 @@ async def start(self, message, nbJ):
     choix = await channel.send(embed=embed)
     # ---- trace ------
     trace.createFile(self.message.author.name)
+
+    view = boutons.ViewInitJoueur(tab, nbJoueursParEquipe)
+    await choix.edit(view=view)
+    finView = await view.wait()
+
+    if not partieEnCours:
+        # ---- trace ------
+        trace.writePlayers(boutons.players)
+        partieEnCours = True
+        partieEnCours = await lancerJeux(boutons.players, self, boutons.playersDiscriminator, trace)
+        await removeRoles(self, boutons.players)
+    else:
+        return
 
     # ajout des réactions au message du bot
     for emoji in tabEmoji:
@@ -299,7 +315,7 @@ async def attente_joueur(payload):
 
         if not partieEnCours:
             # ---- trace ------
-            trace.numberPlayer(tabJoueurs)
+            trace.writePlayers(tabJoueurs)
             partieEnCours = True
             partieEnCours = await lancerJeux(tabJoueurs, contexteExecution, tabJoueursDiscriminator, trace)
             await removeRoles(payload, tabJoueurs)
