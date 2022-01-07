@@ -97,7 +97,7 @@ async def start(self, message, nbJ):
             f"Je ne peux pas me lancer dans ce salon là :( \n ➡️ {client.get_channel(IDCHANNEL).mention}")
         return
 
-    if int(nbJ) < 1 or int(nbJ) > 7:
+    if int(nbJ) < 2 or int(nbJ) > 7:
         await channel.send(
             f"Le nombre de joueurs par équipe doit être compris entre 2 et 7")
         return
