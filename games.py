@@ -244,9 +244,13 @@ def selectQuestion():
     """ Methode de selection d'un manga dans la liste des mangas disponibles """
 
     global data, question, tabRep, typeQuestion, imageQuiz
-
-    if os.path.exists("{}".format(fichiersQuestions)):
-        with open(fichiersQuestions, 'r', encoding="utf-8") as source:
+    fichierQuestions = ""
+    if os.path.exists("{}".format(DossierQuestion)):
+        questions = os.listdir(DossierQuestion)
+        random.seed(datetime.now())
+        random.shuffle(questions)
+        fichierQuestions = questions[0]
+        with open("{}/{}".format(DossierQuestion, fichierQuestions), 'r', encoding="utf-8") as source:
             data = [line for line in source]
         random.seed(datetime.now())
         random.shuffle(data)
@@ -258,7 +262,7 @@ def selectQuestion():
         imageQuiz = data[-1].rstrip("\n")
         return data
     else:
-        print("le fichier {} n'existe pas".format(fichiersQuestions))
+        print("le dossier {} n'existe pas".format(fichierQuestions))
 
 
 def getQuestion():

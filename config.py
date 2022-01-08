@@ -56,6 +56,7 @@ listeMangas = ['Black Clover', 'Bleach', 'Code Geass', 'Death Note', 'Dragon Bal
                'Tokyo Ghoul', 'Tokyo Revengers']
 listesQuestions = ["One Piece", "Death Note"]
 fichiersQuestions = "One Piece.txt"
+DossierQuestion = "Questions"
 
 nomEpreuve1 = "Quiz"
 nomEpreuve2 = "Qui est-ce ?"
