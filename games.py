@@ -414,7 +414,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 await printEmbedImageQuiz(losangeBleu, questionActuelle, imageQuiz, pathImageQuiz)
             else:
                 await printEmbedQuestions(losangeBleu, questionActuelle)
-            await asyncio.sleep(delaiZeroCinq)
+            await asyncio.sleep(delaiTroisCinq)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
                 try:
@@ -457,7 +457,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
             if imageQuiz.lower() != noneString:
                 traitementImageQuiz(imageQuiz, 200, pathImageQuiz)
                 msgv = await printEmbedImageQuiz(losangeBleu, questionActuelle, imageQuiz, pathImageQuiz)
-                await asyncio.sleep(delaiZeroCinq)
+                await asyncio.sleep(delaiTroisCinq)
                 # dataV = []
                 bonneRep = data[indiceBonneReponse].rstrip("\n")
                 reps = tabRep.replace("\n", "").split("/")
@@ -556,14 +556,12 @@ async def lancerJeux(tabJoueur: list, ctx, tabJoueurDiscriminator: list, traceGa
     await printEmbedDebutPartie()
     await asyncio.sleep(delaiDebutPartieTrois)
     selectQuestion()
-    print(data)
     await printEmbedFirstQuestion(typeQuestion)
-    print(data)
     await asyncio.sleep(delaiDebutPartieCinq)
     # quiz
-    """trace.traceQuestionQuiz()
+    trace.traceQuestionQuiz()
     await jeu(0, tabPlayerDiscriminator)
-    trace.traceFinQuestionQuiz()"""
+    trace.traceFinQuestionQuiz()
 
     # "qui est-ce"
     trace.traceQuestionImage()

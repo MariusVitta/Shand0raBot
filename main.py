@@ -143,12 +143,13 @@ async def start(self, message, nbJ):
     else:
         return
 
+    return
     # ajout des réactions au message du bot
-    for emoji in tabEmoji:
+    """for emoji in tabEmoji:
         await choix.add_reaction(emoji)
 
     # suppression du message envoyé par l'utilisateur
-    await client.delete_message(self.message)
+    await client.delete_message(self.message)"""
 
 
 @start.error
@@ -186,9 +187,10 @@ async def restart(self):
     return
 
 
+"""
 @client.event
 async def on_raw_reaction_add(payload):
-    """ Méthode d'evenement pour le bot. À l'ajout d'une reaction on va verifie si l'utilisateur qui a effectué
+    \""" Méthode d'evenement pour le bot. À l'ajout d'une reaction on va verifie si l'utilisateur qui a effectué
     l'action, - Si c'est le bot lui-même ou un bot, on quitte la fonction pour ne pas le prendre en compte dans le
     traitement - Si c'est un utilisateur, on va chercher la réaction sur laquelle il a cliqué et on va lui ajouter
     le rôle associé, si l'utilisateur clique sur autre réaction de jeu cela lui fait changer de rôle de jeu A la fin
@@ -198,7 +200,7 @@ async def on_raw_reaction_add(payload):
         ----------
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
-    """
+    \"""
     global partieEnCours
     member = payload.member
 
@@ -249,14 +251,14 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    """ Méthode d'evenement pour le bot.
+    \""" Méthode d'evenement pour le bot.
         À la suppression d'une reaction, on retire l'utilisateur du rôle associé (s'il existe)
 
         Parameters
         ----------
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
-    """
+    \"""
     # Verification sur le salon afin d'eviter les traitements sur des salons non voulus
     if payload.channel_id == IDCHANNEL:
         guild = await(client.fetch_guild(payload.guild_id))
@@ -275,7 +277,7 @@ async def on_raw_reaction_remove(payload):
 
 
 async def attente_joueur(payload):
-    """ Méthode d'attente des joueurs.
+    \""" Méthode d'attente des joueurs.
         À la suppression d'une reaction, on retire l'utilisateur du rôle associé (s'il existe)
         Si le nombre de joueurs requiert est bon, on lance la partie
 
@@ -283,7 +285,7 @@ async def attente_joueur(payload):
         ----------
         payload : RawReactionActionEvent
             ensemble des données lorsque l'évenement est réalisé
-    """
+    \"""
     global partieEnCours
     tabJoueurs = [[], []]
     tabJoueursDiscriminator = []
@@ -321,6 +323,8 @@ async def attente_joueur(payload):
             await removeRoles(payload, tabJoueurs)
         else:
             return
+
+"""
 
 
 async def removeRoles(ctx, players: list):

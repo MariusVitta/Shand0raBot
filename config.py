@@ -91,7 +91,7 @@ delaiQuestionsImages = 40
 delaiDebutPartieTrois = 3
 delaiDebutPartieCinq = 5
 delaiReponse = 5
-delaiZeroCinq = 0.5
+delaiTroisCinq = 3.5
 delaiDeux = 2
 
 # ------------------------------------------------------------------------------------------------------------#

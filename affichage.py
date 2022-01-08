@@ -149,7 +149,7 @@ async def printEmbedNextQuestion(typeQ=None):
         color=colorEmbedWhiteDBV
     )
     if typeQ:
-        embed.description = f"La prochaine question sera un{'e question à choix simple' if typeQ == '1' else ' QCM'}",
+        embed.description = f"La prochaine question sera un{'e question à choix simple' if typeQ == '1' else ' QCM'}"
     await channel.send(embed=embed)
 
 
@@ -186,6 +186,9 @@ async def affichage(numJeu: int, numQuestion: int, nomEpreuve: str, typeQ):
             numéro de la question acutelle
         nomEpreuve : str
             nom de l'epreuve
+        typeQ :
+            type de question 1: choix multiple
+                             2 : QCM
 
         Returns
         -------
@@ -534,15 +537,20 @@ async def printEmbedBonneReponseImage(fichier: str, reponses: list, messageSende
 
     embed = discord.Embed(
         title="{}{}{}\n\n".format(pointVert, messageSender.author.display_name, textGoodAnswer),
-        description="{}`{}`\n\n{} {} {}{}{} points```\n\n{} {} {}{}{} points```\n\n".format(reponseText, reponse,
-                                                                                            carreBlanc,
-                                                                                            tabEmoji[indiceEquipe1],
-                                                                                            tabRoleBold[indiceEquipe1],
-                                                                                            valTeam1, pointsTeam1,
-                                                                                            carreBlanc,
-                                                                                            tabEmoji[indiceEquipe2],
-                                                                                            tabRoleBold[indiceEquipe2],
-                                                                                            valTeam2, pointsTeam2),
+        description="{}`{} ({})`\n\n{} {} {}{}{} points```\n\n{} {} {}{}{} points```\n\n".format(reponseText, reponse,
+                                                                                                 dossier,
+                                                                                                 carreBlanc,
+                                                                                                 tabEmoji[
+                                                                                                     indiceEquipe1],
+                                                                                                 tabRoleBold[
+                                                                                                     indiceEquipe1],
+                                                                                                 valTeam1, pointsTeam1,
+                                                                                                 carreBlanc,
+                                                                                                 tabEmoji[
+                                                                                                     indiceEquipe2],
+                                                                                                 tabRoleBold[
+                                                                                                     indiceEquipe2],
+                                                                                                 valTeam2, pointsTeam2),
         color=colorEmbedGoodAnswer,
     )
     embed.set_image(url="attachment://" + fichier)
@@ -586,7 +594,7 @@ async def printEmbedTimeoutImage(fichier: str, reponse: str, dossier: str):
         reponse = reponses[0]"""
     embed = discord.Embed(
         title=timeout,
-        description="{}`{}`".format(reponseText, reponse),
+        description="{}`{} ({})`".format(reponseText, reponse, dossier),
         color=colorEmbedTimeout
     )
     embed.set_image(url="attachment://" + fichier)
