@@ -149,7 +149,7 @@ async def printEmbedNextQuestion(typeQ=None):
         color=colorEmbedWhiteDBV
     )
     if typeQ:
-        embed.description = f"La prochaine question sera un{'e question à choix simple' if typeQ == '1' else ' QCM'}"
+        embed.description = f"{'🔹 Question réponse simple' if typeQ == '1' else '🔸  Question choix multiples'}"
     await channel.send(embed=embed)
 
 
@@ -157,7 +157,7 @@ async def printEmbedFirstQuestion(typeQ=None):
     """ Methode de construction de l'embed d'affichage de la prochaine question."""
     embed = discord.Embed(
         title="Première question",
-        description=f"La première question sera un{'e question à choix simple' if typeQ == '1' else ' QCM'}",
+        description=f"{'🔹 Question réponse simple' if typeQ == '1' else '🔸  Question choix multiples'}",
         color=colorEmbedWhiteDBV
     )
     await channel.send(embed=embed)
