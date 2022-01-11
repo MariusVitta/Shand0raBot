@@ -94,6 +94,7 @@ delaiDebutPartieCinq = 5
 delaiReponse = 5
 delaiTroisCinq = 3.5
 delaiDeux = 2
+delaiZeroCinq = 0.5
 
 # ------------------------------------------------------------------------------------------------------------#
 # GESTION DES IMAGES

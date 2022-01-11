@@ -387,7 +387,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 msgv = await printEmbedQuestions(losangeOrange, questionActuelle)
 
             rep = data[indiceBonneReponse].rstrip("\n")
-            await asyncio.sleep(delaiDeux)
+            await asyncio.sleep(delaiTroisCinq)
             # dataV = []
             reps = tabRep.replace("\n", "").split("/")
             random.seed(datetime.now())
@@ -421,7 +421,7 @@ async def jeu(numJeu: int, tabJoueurDiscriminator: list):
                 await printEmbedImageQuiz(losangeBleu, questionActuelle, imageQuiz, pathImageQuiz)
             else:
                 await printEmbedQuestions(losangeBleu, questionActuelle)
-            await asyncio.sleep(delaiTroisCinq)
+            await asyncio.sleep(delaiZeroCinq)
             for nbAffichage in range(nombreTentatives):
                 # attente d'un message des joueurs puis verification de la réponse à l'aide la méthode de verification
                 try:
