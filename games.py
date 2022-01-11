@@ -68,6 +68,9 @@ def traitementImage(fichier: str, valeurResize: int, dossier: str):
     """
     word = RandomWords()
     word = word.get_random_word()
+    while word is None:
+        word = RandomWords()
+        word = word.get_random_word()
     tabNomFichier = os.path.splitext(fichier)
     extension = tabNomFichier[1]
     if os.path.exists("{}/{}/{}".format(path, dossier, fichier)):

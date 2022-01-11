@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a047ec04-93e0-41d8-b353-5b05de04e152" name="Changes" comment="corrections">
-      <change beforePath="$PROJECT_DIR$/One Piece.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/games.py" beforeDir="false" afterPath="$PROJECT_DIR$/games.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -77,41 +76,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1639266167911</updated>
-    </task>
-    <task id="LOCAL-00004" summary="gestion de l'affichage progressif des images&#10;gestion de l'affichage des indices">
-      <created>1639420168966</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1639420168966</updated>
-    </task>
-    <task id="LOCAL-00005" summary="correction">
-      <created>1639425898170</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1639425898170</updated>
-    </task>
-    <task id="LOCAL-00006" summary="mise en place d'un systeme de detection de réponses similaire sur plus de 50% du début de la chaine et detection de réponses similaire à 2 caractères pres">
-      <created>1639431054489</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1639431054489</updated>
-    </task>
-    <task id="LOCAL-00007" summary="Optimisations.&#10;Modification de la lecture des images dans le quiz des images&#10;Modifications des imports">
-      <created>1639511273897</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1639511273897</updated>
-    </task>
-    <task id="LOCAL-00008" summary="modifs minimes">
-      <created>1639511456486</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1639511456486</updated>
     </task>
     <task id="LOCAL-00009" summary="ajouts de questions">
       <created>1639511903165</created>
@@ -421,7 +385,42 @@
       <option name="project" value="LOCAL" />
       <updated>1641665398620</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="déplacement des questions dans un dossier">
+      <created>1641667225919</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1641667225919</updated>
+    </task>
+    <task id="LOCAL-00054" summary="déplacement des questions dans un dossier">
+      <created>1641667245054</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1641667245054</updated>
+    </task>
+    <task id="LOCAL-00055" summary="déplacement des questions dans un dossier">
+      <created>1641667251591</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1641667251591</updated>
+    </task>
+    <task id="LOCAL-00056" summary="déplacement des questions dans un dossier">
+      <created>1641667423297</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1641667423297</updated>
+    </task>
+    <task id="LOCAL-00057" summary="corrections">
+      <created>1641688964411</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1641688964412</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -439,7 +438,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Optimisations.&#10;Modification de la lecture des images dans le quiz des images&#10;Modifications des imports" />
     <MESSAGE value="modifs minime" />
     <MESSAGE value="ajouts de questions" />
     <MESSAGE value="modif pour deploiement" />
@@ -463,6 +461,7 @@
     <MESSAGE value="corrections&#10;ajouts divers&#10;modifications de l'affichage des questions" />
     <MESSAGE value="corrections par Said&#10;suppressions des images &quot;flous&quot; afin d'eviter la surcharge du dossier" />
     <MESSAGE value="passage de choix d'équipe de réactions à boutons" />
+    <MESSAGE value="déplacement des questions dans un dossier" />
     <MESSAGE value="corrections" />
     <option name="LAST_COMMIT_MESSAGE" value="corrections" />
   </component>
